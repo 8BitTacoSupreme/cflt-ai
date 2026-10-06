@@ -2,7 +2,7 @@
 
 ## Scope & Deployment-Model Disclaimer
 
-This guide targets **self-managed Confluent Connect (distributed mode)** as the observability subject. For most FSI engagements, the canonical default is **fully-managed Confluent Cloud connectors** with the Confluent Cloud Metrics API → Dynatrace Confluent extension path; that path inherits Confluent SLAs and removes the JMX/agent layer entirely (see `wiki/patterns/connect-deployment-models.md` and `wiki/patterns/fsi-canon-overlay-for-confluent-skills.md`).
+This guide targets **self-managed Confluent Connect (distributed mode)** as the observability subject. For most FSI deployments, the canonical default is **fully-managed Confluent Cloud connectors** with the Confluent Cloud Metrics API → Dynatrace Confluent extension path; that path inherits Confluent SLAs and removes the JMX/agent layer entirely (see `wiki/patterns/connect-deployment-models.md` and `wiki/patterns/fsi-canon-overlay-for-confluent-skills.md`).
 
 Pick self-managed Connect only when one of these triggers applies:
 - Fully-managed CC connectors don't cover the required source/sink (CFK custom connector, on-prem-only target, regulated runtime)
@@ -13,18 +13,18 @@ Everything below assumes that trigger has been met and you are deploying Connect
 
 ---
 
-## Context: Splunk → Dynatrace Migration
+## Context: Splunk → Dynatrace Migration (If Applicable)
 
-This guide supports the **monitoring stack migration** for Confluent platforms:
+If migrating from Splunk, this guide supports the **monitoring stack migration** for Confluent platforms:
 
 | Data Type | Current (Splunk) | Future (Dynatrace) | Rationale |
 |---|---|---|---|
 | **Performance metrics** | Splunk HEC ingestion | Dynatrace native (API + OneAgent) | Real-time alerting, correlation, cost optimization |
 | **Monitoring dashboards** | Splunk searches → dashboards | Dynatrace dashboards (this guide) | Richer visualization, Davis AI anomaly detection |
 | **Alert rules** | Splunk alert rules | Dynatrace alert rules (DQL- or selector-based) | DQL is more expressive; enables Davis AI |
-| **Audit logs** | Splunk (retained) | **Splunk (no change)** | Compliance requirement; kept separate |
+| **Audit logs** | Existing SIEM (retained) | **Existing SIEM (no change, if compliance requires)** | Audit logs remain in the existing SIEM if compliance requires; kept separate |
 
-**Key transition points:**
+**Key transition points (if migrating from Splunk):**
 1. Confluent Cloud metrics: Replace Splunk HEC receiver with Dynatrace Confluent Cloud extension + API key
 2. Self-managed Connect: Replace Splunk JMX forwarders with Dynatrace OneAgent + JMX Extension 2.0
 3. Existing Splunk dashboards: Retire (or archive 30 days) after Dynatrace dashboards go live
@@ -34,7 +34,7 @@ This guide supports the **monitoring stack migration** for Confluent platforms:
 
 ## Executive Summary
 
-Your Confluent Cloud architecture (three-dashboard pattern with 7-row cluster deep dive) translates to self-managed Connect with two critical differences:
+A typical Confluent Cloud dashboard architecture (three-dashboard pattern with 7-row cluster deep dive) translates to self-managed Connect with two critical differences:
 
 1. **Data model:** Connect's health model is a **state machine** (RUNNING / PAUSED / FAILED / UNASSIGNED / DESTROYED / RESTARTING), not a capacity series. You alert on state transitions and per-task error counters, not on load percentages.
 2. **Dashboard scope:** Connect deserves its own deep-dive dashboard (Dashboard 4) linked from Platform Overview, because connector diagnostics flow state → DLQ → source/sink — not load → lag → latency.
@@ -476,7 +476,7 @@ KUBE_CLUSTER_DR=dr-cluster
 **Versioning & handoff:**
 - Dashboard JSON, alert rules, Terraform, and extension YAML live in `/monitoring` alongside IaC
 - All Dynatrace config is auditable via Git history
-- Client maintains independently post-engagement using Terraform + Dynatrace provider
+- Platform team maintains independently after hand-off using Terraform + Dynatrace provider
 
 ---
 
@@ -519,11 +519,11 @@ The dashboard layout (Row 1 health, Row 2 throughput, Row 3 errors, Row 6 downst
 
 ---
 
-## Appendix A: Splunk → Dynatrace Migration Strategy
+## Appendix A: Splunk → Dynatrace Migration Strategy (If Migrating from Splunk)
 
 ### A.1 Metrics Ingestion Cutover
 
-**Today (Splunk):**
+**Before cutover (Splunk):**
 ```
 Confluent Cloud Metrics API → Splunk HEC → Splunk Dashboards → Alerts → PagerDuty
 Self-Managed Connect JMX    → Splunk Forwarder → Splunk Dashboards → Alerts → PagerDuty
@@ -535,22 +535,22 @@ Confluent Cloud Metrics API → Dynatrace Confluent extension → Dynatrace Dash
 Self-Managed Connect JMX    → OneAgent + JMX Extension 2.0 → Dynatrace Dashboards → Alerts → PagerDuty
 ```
 
-**Audit logs remain in Splunk (no change).**
+**Audit logs remain in the existing SIEM (no change) if compliance requires.**
 
 ### A.2 Dashboard Migration Checklist
 
 | Step | Splunk Owner | Dynatrace Owner | Acceptance Criteria |
 |---|---|---|---|
-| 1. Inventory Splunk dashboards | Data eng | GoodLabs | List all Confluent-related dashboards by cluster/component |
-| 2. Map Splunk searches to DQL | GoodLabs | GoodLabs + client | Mapping doc: each Splunk query → equivalent Grail DQL |
-| 3. Build Dynatrace dashboards | GoodLabs | GoodLabs | Dashboards 1-4 created, tested in dev environment |
-| 4. Validate metric parity | GoodLabs + client | GoodLabs + client | Splunk values ≈ Dynatrace values (within scrape jitter) |
-| 5. Build Dynatrace alerts | GoodLabs | GoodLabs | 10 must-have alerts + any custom alerts |
-| 6. Test alerts (non-prod) | GoodLabs | GoodLabs + client | Alerts fire correctly, notifications route properly |
+| 1. Inventory Splunk dashboards | Platform team | Consultant/implementation partner | List all Confluent-related dashboards by cluster/component |
+| 2. Map Splunk searches to DQL | Consultant/implementation partner | Consultant/implementation partner + platform team | Mapping doc: each Splunk query → equivalent Grail DQL |
+| 3. Build Dynatrace dashboards | Consultant/implementation partner | Consultant/implementation partner | Dashboards 1-4 created, tested in dev environment |
+| 4. Validate metric parity | Consultant/implementation partner + platform team | Consultant/implementation partner + platform team | Splunk values ≈ Dynatrace values (within scrape jitter) |
+| 5. Build Dynatrace alerts | Consultant/implementation partner | Consultant/implementation partner | 10 must-have alerts + any custom alerts |
+| 6. Test alerts (non-prod) | Consultant/implementation partner | Consultant/implementation partner + platform team | Alerts fire correctly, notifications route properly |
 | 7. Parallel run (2 weeks) | Both teams | Both teams | Both stacks active; one source of truth TBD |
-| 8. Cutover | Data eng | Data eng + GoodLabs | Splunk metrics archived; Dynatrace becomes primary |
-| 9. Splunk dashboard retirement | Data eng | — | Archive Splunk dashboards (30-day grace) |
-| 10. Runbook updates | Data eng + GoodLabs | Data eng | Runbooks point to Dynatrace dashboards, not Splunk |
+| 8. Cutover | Platform team | Platform team + Consultant/implementation partner | Splunk metrics archived; Dynatrace becomes primary |
+| 9. Splunk dashboard retirement | Platform team | — | Archive Splunk dashboards (30-day grace) |
+| 10. Runbook updates | Platform team + Consultant/implementation partner | Platform team | Runbooks point to Dynatrace dashboards, not Splunk |
 
 ### A.3 Splunk Search → Grail DQL Translation
 
@@ -596,7 +596,7 @@ timeseries lag = avg(confluent_kafka.server.consumer_lag_offsets),
 
 Splunk alert:
 ```spl
-source=confluent_metrics metric_name=consumer_lag_offsets cluster_id=lkc-prod consumer_group=cncb-*
+source=confluent_metrics metric_name=consumer_lag_offsets cluster_id=lkc-prod consumer_group=payments-*
 | stats avg(value) by consumer_group
 | where avg(value) > 100000
 | alert
@@ -608,7 +608,7 @@ timeseries lag = avg(confluent_kafka.server.consumer_lag_offsets),
            by:{consumer_group_id, dt.entity.confluent_kafka_cluster},
            from:now()-5m
 | filter dt.entity.confluent_kafka_cluster == "lkc-prod"
-| filter matchesPhrase(consumer_group_id, "cncb-")
+| filter matchesPhrase(consumer_group_id, "payments-")
 | filter lag[-1] > 100000
 | fieldsAdd severity = "CRITICAL"
 ```
@@ -630,14 +630,14 @@ timeseries lag = avg(confluent_kafka.server.consumer_lag_offsets),
 
 Dynatrace alert rules route to the same PagerDuty / Opsgenie / Slack / Email channels Splunk used. On-call procedures and runbooks are unchanged — only the source of truth shifts.
 
-### A.6 Audit Log Retention (Splunk Unchanged)
+### A.6 Audit Log Retention (Existing SIEM Unchanged)
 
 ```
-Kafka audit events → Splunk HEC → Splunk (indefinite retention per compliance)
+Kafka audit events → existing SIEM (e.g. Splunk HEC → Splunk; retention per compliance)
 Dynatrace events   → Dynatrace event store (30-day default, extendable per tenant SKU)
 ```
 
-**Key difference:** Dynatrace events are correlation-focused, not audit-focused. Keep both systems if compliance requires the Kafka audit trail in Splunk.
+**Key difference:** Dynatrace events are correlation-focused, not audit-focused. Keep both systems if compliance requires the Kafka audit trail in the existing SIEM.
 
 ### A.7 Migration Risks & Mitigations
 

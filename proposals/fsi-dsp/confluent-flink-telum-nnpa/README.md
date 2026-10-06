@@ -3,7 +3,7 @@
 Fraud-scoring pipeline: Confluent Platform (Kafka + Flink via CMF) on OpenShift/s390x,
 with model inference offloaded to the Telum on-chip AI accelerator (NNPA).
 
-**Target hardware (this proposal):** IBM z16, **32 dedicated IFLs across 4 Telum (gen-1) chips**.
+**Reference sizing — example target:** IBM z16, **32 dedicated IFLs across 4 Telum (gen-1) chips**.
 RHEL + OCP assumed pre-installed.
 
 ---
@@ -29,23 +29,23 @@ on 2026-07-06.
 | Semeru = OpenJDK libs on OpenJ9 | ✅ |
 | Terraform is peripheral (Grafana config-as-code + cloud adjuncts) | ✅ |
 
-### Support-matrix posture (resolved 2026-07-06)
+### Support-matrix posture
 
 `confluent-docs` ("Linux on IBM Z (s390x) support") lists, under *"not yet supported on
 s390x"*: **FIPS mode, IPv6, Unified Stream Manager Agent, connectors that rely on native OS
 libraries.** All four are **CP-layer** statements, not platform statements — s390x/RHEL/OCP
 support all of these; the claim is about Confluent Platform's s390x build.
 
-Per the runbook's Phase 2/6.5 reasoning — the public matrix lags actual state, this POC runs
-directly with the IBM/Confluent partner team, and CP is entitled as **IBM Confluent Platform
+Per the runbook's Phase 2/6.5 reasoning — the public matrix lags actual state (confirm with IBM/Confluent
+before deployment), and CP is entitled as **IBM Confluent Platform
 for Z and LinuxONE** (GA 2026-03-17) — none of these are treated as design-time blockers.
-They are **recorded posture items, confirmed at kickoff** and captured in the BOM (§9 of the
+They are **recorded posture items, confirmed with IBM/Confluent before deployment** and captured in the BOM (§9 of the
 runbook). The artifacts here reflect that:
 
 | Item | Posture | Where it lands |
 |---|---|---|
 | **FIPS mode** | **Supported and enabled.** OS FIPS is validated *on z16* (RHEL 9 modules tested on z16 as a certified operational environment). CP FIPS mode is BC-FIPS — pure Java; enabling on Z is configuration + certification sequencing, not architecture. | `ansible/02-fips-mode.yml`, `helm/cfk-operator-values.yaml` (`fipsmode: true`), BCFKS keystore pipeline |
-| **IPv6** | Demoted to a **recorded posture item**, not a gate. Same doc scope as the FIPS line. Confirm with the partner team; if CP's s390x build lacks IPv6 listener support it surfaces as broker bind failures, not a clean error — so record the cluster network mode either way. | `00-platform-validate.yml` (warn + record) |
+| **IPv6** | Demoted to a **recorded posture item**, not a gate. Same doc scope as the FIPS line. Confirm with IBM/Confluent before deployment; if CP's s390x build lacks IPv6 listener support it surfaces as broker bind failures, not a clean error — so record the cluster network mode either way. | `00-platform-validate.yml` (warn + record) |
 | **Native-lib connectors** | A **runtime fact, not a support-matrix fact.** Connectors in scope (Mongo sink, CDC) are pure-Java and run fine. Audit and record per plugin. | `ci/images.txt` + BOM connector audit row |
 | **Unified Stream Manager Agent** | Not deployed by this accelerator. Values are USMAgent-ready. | — |
 | **Entitlement** | **IBM Confluent Platform for Z and LinuxONE**, entitled through IBM. BOM line item. | `MANIFEST-entry.yaml` |
@@ -103,13 +103,13 @@ as ordinary Kubernetes scheduling:
 - `cpuManagerPolicy: static` + `cpuManagerPolicyOptions: full-pcpus-only` → the TM gets **whole cores** (both SMT siblings), so inference threads don't contend with a co-tenant on the same core.
 - TM `cpu` requests must be **even** (whole cores) for `full-pcpus-only` to admit the pod.
 
-### Broker/TM co-residency — DECIDED: Option A (2026-07-06)
+### Broker/TM co-residency — Recommended: Option A
 
 The runbook says *"do not co-schedule brokers and inference-heavy TaskManagers on the same chip
 domain if you can avoid it."* With exactly 4 chips and a goal of using all 4 accelerators, **you
 cannot avoid it.**
 
-**Decision: Option A.** 4 inference TMs, one per chip; brokers co-resident but on **disjoint
+**Recommendation: Option A.** 4 inference TMs, one per chip; brokers co-resident but on **disjoint
 exclusive cores**. Rationale: NNPA is a *separate on-chip functional unit* — brokers never issue
 NNPA instructions. The contention is for cores and L2/LLC, which whole-core pinning
 (`full-pcpus-only`) addresses. Uses all 4 accelerators.
@@ -142,7 +142,7 @@ fail to schedule, and the failure reads as a capacity problem rather than an ali
 
 ### Smaller notes
 
-- *"4 Telum cores"* in the ask is read as **4 Telum chips** (8 cores/chip × 4 = 32 IFLs). This means
+- *"4 Telum cores"* is read as **4 Telum chips** (8 cores/chip × 4 = 32 IFLs). This means
   all cores on all 4 chips are IFLs, giving exactly **4 NNPA accelerators**.
 - On **z16 (Telum gen-1)** chip pinning is a **correctness/latency requirement**, not an optimization —
   a core cannot reach another chip's accelerator.
@@ -197,7 +197,7 @@ from day one, so flipping CP FIPS mode is a values change rather than a re-archi
 
 ## 4. Open items before benchmarking
 
-1. **Partner-team confirmation** of CP-on-Z status for: CP FIPS mode, IPv6 listeners, USM Agent.
+1. **IBM/Confluent confirmation** of CP-on-Z status for: CP FIPS mode, IPv6 listeners, USM Agent.
    Record answers in the BOM — that table, not the public matrix, is the source of truth.
 2. **TLS 1.2 EMS (RFC 7627) client-fleet audit.** RHEL 9 FIPS mode enforces Extended Master Secret;
    legacy clients without EMS or TLS 1.3 cannot connect. The first symptom is mystery producer
@@ -206,6 +206,6 @@ from day one, so flipping CP FIPS mode is a values change rather than a re-archi
 4. Confirm each Telum chip maps 1:1 to an OCP worker node (Phase 0 `chip_count` assertion).
 5. **DLFLOAT16 accuracy tolerance** on the labelled eval set — this, not latency, is the kill criterion.
 
-Note for the client security doc: the **AI inference path is outside the FIPS boundary by
+Note for the security review: the **AI inference path is outside the FIPS boundary by
 construction** — zDLC/zDNN/NNPA perform no cryptographic functions. State it explicitly to preempt
 the question.

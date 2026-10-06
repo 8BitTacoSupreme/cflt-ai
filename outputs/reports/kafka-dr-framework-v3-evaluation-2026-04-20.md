@@ -12,7 +12,7 @@ claims_unverifiable: 4
 
 ## TL;DR
 
-The document is technically sound. 24 verifiable claims checked: 18 confirmed, 2 corrected, 4 unverifiable (ORKA-specific claims with limited public documentation). The SLA tier values, Cluster Linking mechanics, and One-Click DR architectural description all align with compiled wiki knowledge and live MCP sources. Two corrections required: (1) `auto.create.mirror.topics` should be `auto.create.mirror.topics.enable`, (2) "RPO = 0" for planned failover should be qualified as "effective RPO = 0" (async drain-to-zero, not synchronous). One-Click DR timeline is slightly conservative (Q4 2026 GA per Confluent, not Q1 2027) but the conclusion is correct — FSI adoption lag makes this effectively 2027 for a bank.
+The reviewed DR framework document is technically sound. 24 verifiable claims checked: 18 confirmed, 2 corrected, 4 unverifiable (ORKA-specific claims with limited public documentation). The SLA tier values, Cluster Linking mechanics, and One-Click DR architectural description all align with compiled wiki knowledge and live MCP sources. Two corrections required: (1) `auto.create.mirror.topics` should be `auto.create.mirror.topics.enable`, (2) "RPO = 0" for planned failover should be qualified as "effective RPO = 0" (async drain-to-zero, not synchronous). One-Click DR timeline is slightly conservative (Q4 2026 GA per Confluent, not Q1 2027) but the conclusion is correct — FSI adoption lag makes this effectively 2027 for a regulated FSI adopter.
 
 ---
 
@@ -104,7 +104,7 @@ The document is technically sound. 24 verifiable claims checked: 18 confirmed, 2
 **CONFIRMED.** Blog: "triggering a failover is easily accessible in the portal user interface (UI)." Requires Gateway to be deployed and configured.
 
 ### Claim 11 — Not GA before Q1 2027
-**CONFIRMED (with timeline update).** One-Click DR is a Cluster Linking-based DR automation feature — distinct from Cloud Gateway (which is a traffic routing proxy). Current Confluent guidance puts One-Click DR GA at **Q4 2026**. The document's "not before Q1 2027" is conservative by one quarter, but the effective conclusion is correct and arguably understated: even at Q4 2026 GA, an FSI bank will not deploy a freshly-GA'd vendor feature. Code freeze windows, internal validation, and the principle of not beta-testing vendor code in production mean realistic adoption is H1-H2 2027. The document's "plan for later rather than earlier" framing is sound field judgment.
+**CONFIRMED (with timeline update).** One-Click DR is a Cluster Linking-based DR automation feature — distinct from Cloud Gateway (which is a traffic routing proxy). Current Confluent guidance puts One-Click DR GA at **Q4 2026**. The document's "not before Q1 2027" is conservative by one quarter, but the effective conclusion is correct and arguably understated: even at Q4 2026 GA, a regulated FSI adopter will not deploy a freshly-GA'd vendor feature. Code freeze windows, internal validation, and the principle of not beta-testing vendor code in production mean realistic adoption is H1-H2 2027. The document's "plan for later rather than earlier" framing is sound field judgment.
 
 ### Claim 12 — "One-Click DR" is the product name
 **CONFIRMED (informal).** "One-Click DR" is field/SE shorthand, not official Confluent product branding. Confluent uses terms like "automatic disaster recovery switchover," "client switchover," and "Global Resilience" in formal marketing. Acceptable for an internal framework doc. The key distinction: One-Click DR is built on **Cluster Linking** (not Cloud Gateway). Gateway is a separate product for traffic routing/proxy; One-Click DR automates the CL promote/failback lifecycle.
@@ -147,7 +147,7 @@ The document is technically sound. 24 verifiable claims checked: 18 confirmed, 2
 
 1. **Cloud Gateway** — wiki has no article on Confluent Cloud Gateway (the protocol-aware proxy layer)
 2. **Application-layer DR routing** — wiki DR articles cover infrastructure failover only; no coverage of the client-restart problem the document addresses
-3. **Oracle/ORBH co-dependency** — wiki has no cross-system DR coordination coverage
+3. **Oracle / downstream system-of-record DR co-dependency** — wiki has no cross-system DR coordination coverage
 4. **ORKA / Kafka DR proxy** — no wiki coverage of proxy-based DR routing patterns
 
 ---
@@ -202,7 +202,7 @@ The document is technically sound. 24 verifiable claims checked: 18 confirmed, 2
 
 1. **ORKA claims are unverifiable** against public sources. The product exists (YouTube demo, March 2026) but has no public documentation. Technical claims are protocol-sound but untested by this evaluation.
 2. **One-Click DR timeline** is necessarily speculative — Confluent has disclosed no ship date for the fully-managed version.
-3. **Oracle/ORBH section** (§3) was not validated — it is infrastructure-specific to the customer environment and outside Confluent MCP scope.
+3. **Oracle / downstream system-of-record DR construct section** (§3) was not validated — it is specific to the source environment and outside Confluent MCP scope.
 4. **"One-Click DR" terminology** is not official Confluent branding. Acceptable for internal docs but flagged for awareness.
 
 ---

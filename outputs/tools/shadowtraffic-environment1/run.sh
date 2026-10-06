@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Live run: produces real Avro-serialized events to datagen.users.enterprise
-# on the environment1 Confluent Cloud cluster until stopped (Ctrl+C).
+# on the target Confluent Cloud cluster until stopped (Ctrl+C).
 set -euo pipefail
 cd "$(dirname "$0")"
 

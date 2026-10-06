@@ -2,7 +2,7 @@
 title: Confluent Platform mTLS Setup with Self-Signed Certs
 tags: [confluent-platform, mtls, tls, ssl, kafka, security, pkcs12, acls, fsi, linuxone]
 sources:
-  - /Users/jhogan/Downloads/mTLS-CP-LinuxOne.md
+  - "internal field notes (mTLS on CP / LinuxONE)"
 related:
   - concepts/linuxone-jdk-tls-gotchas
   - patterns/cp-tls-debugging-by-component
@@ -52,7 +52,7 @@ openssl genrsa -aes256 -passout pass:$CA_PASS -out ca-key.pem 4096
 # Self-signed CA certificate
 openssl req -x509 -new -nodes -key ca-key.pem -sha256 -days $VALIDITY \
   -passin pass:$CA_PASS \
-  -subj "/C=US/ST=MA/L=Boston/O=Example/OU=Platform/CN=Example-Kafka-Root-CA" \
+  -subj "/C=US/ST=ST/L=Anytown/O=Example/OU=Platform/CN=Example-Kafka-Root-CA" \
   -out ca-cert.pem
 
 # Verify
@@ -76,7 +76,7 @@ keytool -genkeypair \
   -alias $BROKER \
   -keyalg RSA -keysize 2048 -sigalg SHA256withRSA \
   -validity $CERT_VALIDITY \
-  -dname "CN=$BROKER_FQDN,OU=Platform,O=Example,L=Boston,ST=MA,C=US" \
+  -dname "CN=$BROKER_FQDN,OU=Platform,O=Example,L=Anytown,ST=ST,C=US" \
   -ext "SAN=dns:$BROKER_FQDN,dns:$BROKER,ip:$BROKER_IP" \
   -storepass $KS_PASS -keypass $KS_PASS
 
@@ -140,7 +140,7 @@ keytool -genkeypair \
   -alias $CLIENT \
   -keyalg RSA -keysize 2048 -sigalg SHA256withRSA \
   -validity $CERT_VALIDITY \
-  -dname "CN=$CLIENT_CN,OU=Apps,O=Example,L=Boston,ST=MA,C=US" \
+  -dname "CN=$CLIENT_CN,OU=Apps,O=Example,L=Anytown,ST=ST,C=US" \
   -storepass $KS_PASS -keypass $KS_PASS
 
 keytool -certreq -keystore $CLIENT.keystore.p12 -storetype PKCS12 \
@@ -291,9 +291,9 @@ Principal name here must match what `ssl.principal.mapping.rules` extracts from 
 
 ## Automation
 
-Two automation paths exist depending on whether you're inside or outside the FSI engagement:
+Two automation paths exist depending on whether you're inside the fsi-dsp harness or standalone:
 
-- **FSI engagement (fsi-dsp scenarios):** use `fsi-dsp/ansible/roles/cp_mtls/`. The role covers §1–§6 of this pattern, includes a PKCS#11 / CEX HSM mode for HSM-backed broker keys, is molecule-tested, and wires into `site.yml` via the `cp-rhel` / `cp-rhel-linuxone` scenarios. Live-cluster verification lives in `fsi-dsp/scenarios/cp-rhel-linuxone/playbooks/verify-mtls.yml`. This is the canonical automation for the FSI engagement.
+- **Inside the fsi-dsp harness (fsi-dsp scenarios):** use `fsi-dsp/ansible/roles/cp_mtls/`. The role covers §1–§6 of this pattern, includes a PKCS#11 / CEX HSM mode for HSM-backed broker keys, is molecule-tested, and wires into `site.yml` via the `cp-rhel` / `cp-rhel-linuxone` scenarios. Live-cluster verification lives in `fsi-dsp/scenarios/cp-rhel-linuxone/playbooks/verify-mtls.yml`. This is the canonical automation in the fsi-dsp harness.
 - **Outside the fsi-dsp scenario harness:** a standalone Ansible companion bundle is parked at `raw/articles/ansible-cp-mtls-bundle/` (see [INGEST-NOTES](../../raw/articles/ansible-cp-mtls-bundle/INGEST-NOTES.md)). It automates §1–§6 with five `kafka_*` roles and is portable to any Linux Kafka deployment. The bundle does **not** cover PKCS#11/HSM (acknowledged limitation); software keys only. It was evaluated against fsi-dsp on 2026-05-27 and declined for FSI use because `cp_mtls` is strictly more comprehensive — but it stands on its own for portable distribution alongside this pattern.
 
 ## When to Use

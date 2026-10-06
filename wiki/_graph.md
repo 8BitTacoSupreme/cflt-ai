@@ -76,25 +76,25 @@ patterns/dr-multi-region-cluster → patterns/dr-cluster-linking : async DR for 
 patterns/dr-multi-region-cluster → patterns/dr-mirrormaker2 : async DR for CFK/CP
 patterns/dr-multi-region-cluster → concepts/sla-tiers : compliance tier requirement
 patterns/dr-multi-region-cluster → synthesis/adr-index : ADR-005, ADR-008
-patterns/dr-multi-region-cluster → patterns/kafka-admin-topic-rbac-tool : provisioning tool for MRC target topics/RBAC
+patterns/dr-multi-region-cluster → patterns/yaml-topic-rbac-admin-tool : provisioning tool for MRC target topics/RBAC
 
-patterns/kafka-admin-topic-rbac-tool → patterns/dr-multi-region-cluster : target topology for provisioned topics
-patterns/kafka-admin-topic-rbac-tool → patterns/x86-to-linuxone-cluster-linking-migration : parallel audit/validate/evidence discipline
-patterns/kafka-admin-topic-rbac-tool → patterns/fsi-governance-automation : governance-as-code substitute for CP (Terraform is Cloud-only)
-patterns/kafka-admin-topic-rbac-tool → patterns/topic-naming : naming/config conventions for regenerated topic YAML
-patterns/kafka-admin-topic-rbac-tool → concepts/sla-tiers : tier system drives placement-policy assignment
-patterns/kafka-admin-topic-rbac-tool → patterns/cp-mrc-migration-rehearsal-rig : rehearsal rig for the migration this tool provisions topics/RBAC for
+patterns/yaml-topic-rbac-admin-tool → patterns/dr-multi-region-cluster : target topology for provisioned topics
+patterns/yaml-topic-rbac-admin-tool → patterns/x86-to-linuxone-cluster-linking-migration : parallel audit/validate/evidence discipline
+patterns/yaml-topic-rbac-admin-tool → patterns/fsi-governance-automation : governance-as-code substitute for CP (Terraform is Cloud-only)
+patterns/yaml-topic-rbac-admin-tool → patterns/topic-naming : naming/config conventions for regenerated topic YAML
+patterns/yaml-topic-rbac-admin-tool → concepts/sla-tiers : tier system drives placement-policy assignment
+patterns/yaml-topic-rbac-admin-tool → patterns/cp-mrc-migration-rehearsal-rig : rehearsal rig for the migration this tool provisions topics/RBAC for
 
 # Outbound — patterns/cp-mrc-migration-rehearsal-rig
 patterns/cp-mrc-migration-rehearsal-rig → patterns/dr-multi-region-cluster : target architecture this rehearsal migrates toward
 patterns/cp-mrc-migration-rehearsal-rig → patterns/x86-to-linuxone-cluster-linking-migration : runbook shape the Cluster Linking cutover follows
-patterns/cp-mrc-migration-rehearsal-rig → patterns/kafka-admin-topic-rbac-tool : tool that handles the ACL/RBAC portability this rig skips
+patterns/cp-mrc-migration-rehearsal-rig → patterns/yaml-topic-rbac-admin-tool : tool that handles the ACL/RBAC portability this rig skips
 patterns/cp-mrc-migration-rehearsal-rig → concepts/sla-tiers : informs how aggressively to pursue the zero-DR-coverage mitigation
 patterns/cp-mrc-migration-rehearsal-rig → patterns/shadowtraffic-confluent-cloud-datagen : ShadowTraffic producer config/flags used to generate the rig's live background traffic
 patterns/dr-multi-region-cluster → patterns/cp-mrc-migration-rehearsal-rig : hands-on rehearsal of the live-absorption path into this architecture
 
-patterns/fsi-governance-automation → patterns/kafka-admin-topic-rbac-tool : CP-side tool where Terraform provider can't reach MDS
-patterns/x86-to-linuxone-cluster-linking-migration → patterns/kafka-admin-topic-rbac-tool : same audit discipline applied to topic/RBAC provisioning
+patterns/fsi-governance-automation → patterns/yaml-topic-rbac-admin-tool : CP-side tool where Terraform provider can't reach MDS
+patterns/x86-to-linuxone-cluster-linking-migration → patterns/yaml-topic-rbac-admin-tool : same audit discipline applied to topic/RBAC provisioning
 
 synthesis/adr-index → concepts/fsi-data-streaming-platform : platform these decisions govern
 synthesis/adr-index → concepts/sla-tiers : tier system (ADR-002, ADR-008)
@@ -729,6 +729,16 @@ patterns/topic-naming → patterns/shadowtraffic-confluent-cloud-datagen : namin
 # patterns/schema-registry-manual-install-permissions (2026-09-09)
 patterns/schema-registry-manual-install-permissions → concepts/schema-registry-best-practices : operational surface this security layer sits underneath
 concepts/schema-registry-best-practices → patterns/schema-registry-manual-install-permissions : broker-side ACL/RBAC requirements for the _schemas topic
-patterns/schema-registry-manual-install-permissions → patterns/kafka-admin-topic-rbac-tool : replication.factor: -1 + confluent.placement.constraints mechanism for pre-creating _schemas on MRC
-patterns/kafka-admin-topic-rbac-tool → patterns/schema-registry-manual-install-permissions : ACL/RBAC requirements for the SR service principal once _schemas is pre-created
+patterns/schema-registry-manual-install-permissions → patterns/yaml-topic-rbac-admin-tool : replication.factor: -1 + confluent.placement.constraints mechanism for pre-creating _schemas on MRC
+patterns/yaml-topic-rbac-admin-tool → patterns/schema-registry-manual-install-permissions : ACL/RBAC requirements for the SR service principal once _schemas is pre-created
 patterns/schema-registry-manual-install-permissions → concepts/kafka-streams-schema-patterns : client-side SR integration, contrasted with broker-side authorization
+
+# patterns/kcp-msk-migration-bastion-host (2026-09-16)
+patterns/kcp-msk-migration-bastion-host → patterns/dr-cluster-linking : shared mirror-topic mechanism (KCP migration-infra/migrate-topics vs. standard CC DR)
+patterns/kcp-msk-migration-bastion-host → concepts/cluster-linking-topology : mirror-topic/promotion background used by the pipeline stages
+patterns/kcp-msk-migration-bastion-host → concepts/confluent-cloud-private-networking : PNI gateway/ENI/wildcard-DNS mechanics behind KCP's connectivity stage
+patterns/kcp-msk-migration-bastion-host → concepts/confluent-gateway : gateway-based client cutover KCP's migration flow points to
+patterns/kcp-msk-migration-bastion-host → patterns/yaml-topic-rbac-admin-tool : comparable principal-to-role-binding migration tooling for CP rather than MSK→CC
+patterns/dr-cluster-linking → patterns/kcp-msk-migration-bastion-host : KCP as the MSK-source path onto the same mirror-topic DR primitive
+concepts/confluent-cloud-private-networking → patterns/kcp-msk-migration-bastion-host : PNI as the connectivity step in an MSK migration
+concepts/confluent-gateway → patterns/kcp-msk-migration-bastion-host : gateway-based zero-config-change client switchover consumed by KCP migrations

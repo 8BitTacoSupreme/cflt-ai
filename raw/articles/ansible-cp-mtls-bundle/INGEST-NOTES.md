@@ -46,7 +46,7 @@ namespace).
 
 ## Who Is This Bundle For
 
-Someone outside the FSI engagement who wants to stand up CP mTLS without
+Someone outside the fsi-dsp harness who wants to stand up CP mTLS without
 the fsi-dsp scenario harness. The bundle is well-scoped, has working
 `community.crypto` roles, and maps 1:1 to §1–§6 of the source runbook —
 making it a clean companion to the wiki pattern for portable distribution.
@@ -83,5 +83,5 @@ ansible-cp-mtls-bundle/
 - Wiki pattern (canonical procedure): [`wiki/patterns/cp-mtls-self-signed-setup.md`](../../../wiki/patterns/cp-mtls-self-signed-setup.md)
 - Wiki pattern (debug recipes): [`wiki/patterns/cp-tls-debugging-by-component.md`](../../../wiki/patterns/cp-tls-debugging-by-component.md)
 - Wiki concept (LinuxONE gotchas): [`wiki/concepts/linuxone-jdk-tls-gotchas.md`](../../../wiki/concepts/linuxone-jdk-tls-gotchas.md)
-- fsi-dsp canonical role: `raw/repos/fsi-dsp/ansible/roles/cp_mtls/` (the one to actually use in the FSI engagement)
+- fsi-dsp canonical role: `raw/repos/fsi-dsp/ansible/roles/cp_mtls/` (the one to actually use inside the fsi-dsp harness)
 - fsi-dsp live-cluster verify: `raw/repos/fsi-dsp/scenarios/cp-rhel-linuxone/playbooks/verify-mtls.yml`

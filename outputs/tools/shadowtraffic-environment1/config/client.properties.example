@@ -1,21 +1,21 @@
 # Copy this file to client.properties (gitignored) and fill in real values.
 # Never commit the filled-in version - it holds live Confluent Cloud credentials.
 #
-# bootstrap.servers / schema.registry.url came from the environment1 terraform
+# bootstrap.servers / schema.registry.url came from the environment's terraform
 # outputs (kafka_bootstrap_endpoints["enterprise"], and the Schema Registry
-# cluster lsrc-22jjg6y's REST endpoint - look it up with:
-#   confluent schema-registry cluster describe --environment env-0k9yy9
-# or in the Confluent Cloud UI under Environment > environment1 > Schema Registry.
+# cluster lsrc-xxxxx's REST endpoint - look it up with:
+#   confluent schema-registry cluster describe --environment env-xxxxx
+# or in the Confluent Cloud UI under Environment > <your-environment> > Schema Registry.
 #
 # API key/secret pairs come from AWS Secrets Manager on the bastion:
-#   confluent/environment1/datagen-enterprise-kafka-creds   (Kafka key/secret)
+#   confluent/<env>/datagen-enterprise-kafka-creds   (Kafka key/secret)
 # and the admin-scoped Schema Registry key created alongside it
 # (module.iam.confluent_api_key.sr_keys["admin:schema_registry"] in terraform
 # state) - confirm which secret holds the SR key/secret pair before filling
 # basic.auth.user.info below; it may be bundled into admin-enterprise-kafka-creds
 # or need to be pulled from terraform output/state directly.
 
-bootstrap.servers=lkc-rr00mwk.us-east-2.aws.private.confluent.cloud:9092
+bootstrap.servers=<cluster-id>.<region>.aws.private.confluent.cloud:9092
 security.protocol=SASL_SSL
 sasl.mechanism=PLAIN
 sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username='<DATAGEN_KAFKA_API_KEY>' password='<DATAGEN_KAFKA_API_SECRET>';

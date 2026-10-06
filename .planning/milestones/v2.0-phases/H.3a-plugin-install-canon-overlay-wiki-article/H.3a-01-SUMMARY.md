@@ -99,7 +99,7 @@ Each task was committed atomically:
   "version": "1.0.0",
   "gitCommitSha": "91d1871ef8c320be92bca955c8e42492a2778cb4",
   "installedAt": "2026-05-17T16:29:23.537Z",
-  "projectPath": "/Users/jhogan/cflt-ai"
+  "projectPath": "<repo-root>"
 }
 ```
 

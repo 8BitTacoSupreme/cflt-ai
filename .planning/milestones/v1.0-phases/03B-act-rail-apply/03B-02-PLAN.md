@@ -224,7 +224,7 @@ def run_gate_chain(request, overlay=None, bypass=None) -> List[GateResult]
     ```
   </action>
   <verify>
-    <automated>cd /Users/jhogan/cflt-ai && python3 -c "
+    <automated>cd <repo-root> && python3 -c "
 t = open('.claude/commands/dsp-apply.md').read()
 assert 'CONFIRM APPLY' in t, 'missing CONFIRM APPLY'
 assert '--gate-bypass' not in t, 'must not have --gate-bypass'

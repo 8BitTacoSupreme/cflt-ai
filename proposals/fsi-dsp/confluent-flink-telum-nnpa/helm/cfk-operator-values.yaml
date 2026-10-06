@@ -13,7 +13,7 @@
 # Support-matrix posture (see ../README.md §1): confluent-docs lists FIPS mode,
 # IPv6, USM Agent, and native-lib connectors as "not yet supported on s390x".
 # These are CP-layer statements and the public matrix lags actual state; status
-# is confirmed with the IBM/Confluent partner team at kickoff and recorded in the
+# is confirmed with IBM/Confluent before deployment and recorded in the
 # BOM. FIPS mode is ENABLED below on that basis.
 # =============================================================================
 

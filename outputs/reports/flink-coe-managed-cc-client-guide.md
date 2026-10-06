@@ -172,7 +172,7 @@ Two network paths matter, and only one is yours to wire.
 
 ## Deployment flow (the FSI pattern)
 
-- **Developers get no direct CLI/Console access to production.** All Flink SQL is version-controlled and deployed by a **self-hosted CI/CD runner inside the customer VPC** (required for PrivateLink reachability), which calls `confluent_flink_statement` (preferred, infrastructure-as-code) or the REST API over the Private Endpoint.
+- **Developers get no direct CLI/Console access to production.** All Flink SQL is version-controlled and deployed by a **self-hosted CI/CD runner inside your VPC** (required for PrivateLink reachability), which calls `confluent_flink_statement` (preferred, infrastructure-as-code) or the REST API over the Private Endpoint.
 - Because the Flink control-plane endpoint (`flink.<region>.aws.private.confluent.cloud`) is a private target, the runner must be able to **resolve it** (private hosted zone attached to the runner's network) and **reach it** (the endpoint's security group allows TCP/443 from the runner's CIDR, and the runner's node pool spans the availability zones that have an endpoint — PrivateLink endpoints are per-AZ). These are the same requirements as any private data-plane Terraform apply.
 
 ## Two common failure modes on this path

@@ -2,7 +2,7 @@
 title: CP → MRC Live Migration Rehearsal Rig
 tags: [kafka confluent-platform mrc kraft cluster-linking migration disaster-recovery ansible cp-ansible replicator kafka-connect schema-registry shadowtraffic fsi]
 sources: [raw/repos/cp-migration-demo-rehearsal.md]
-related: [patterns/dr-multi-region-cluster, patterns/x86-to-linuxone-cluster-linking-migration, patterns/kafka-admin-topic-rbac-tool, concepts/sla-tiers, patterns/shadowtraffic-confluent-cloud-datagen]
+related: [patterns/dr-multi-region-cluster, patterns/x86-to-linuxone-cluster-linking-migration, patterns/yaml-topic-rbac-admin-tool, concepts/sla-tiers, patterns/shadowtraffic-confluent-cloud-datagen]
 confidence: medium
 last_updated: 2026-09-09
 last_validated: 2026-09-09
@@ -16,7 +16,7 @@ A disposable local rig that rehearses a specific, higher-risk Confluent
 Platform migration: absorbing a standalone Passive Region cluster's live
 brokers into a Primary (Active) cluster's KRaft quorum to form a
 Multi-Region Cluster (MRC), while a Cluster Linking bridge into a smaller
-"Prod Support" environment stands in as a temporary DR safety net for the
+"DR Bridge" environment (a temporary, pre-approved secondary environment) stands in as a temporary DR safety net for the
 absorption window — layered on top of an **existing** Confluent Replicator
 DR pipe (Active → Passive) that the migration is in the process of retiring.
 Two independently runnable tracks reach the same verified end state —
@@ -24,7 +24,7 @@ Docker Compose (fast, prebuilt images) and real cp-ansible (package
 installs + systemd, closer to the actual production tooling) — and both
 were executed end-to-end, not just written. The cp-ansible track's full
 topology now includes Schema Registry and Kafka Connect (generic worker on
-Active/Prod Support, Confluent Replicator executable on Passive) alongside
+Active/DR Bridge, Confluent Replicator executable on Passive) alongside
 brokers/controllers, plus a continuous ShadowTraffic producer against
 Active standing in for live traffic. The 5-stage cutover sequence (build
 bridge → cutover gate → stop Replicator → MRC absorption → sever bridge)
@@ -44,7 +44,7 @@ to join Primary's quorum, the old Passive Region cluster stops being an
 independent failover target — and partition reassignment into the final
 MRC layout is not instantaneous, so there is a real window with reduced or
 zero DR coverage for whichever topics haven't finished reassigning yet.
-Standing up a Cluster Linking bridge to an already-approved "Prod Support"
+Standing up a Cluster Linking bridge to an already-approved "DR Bridge"
 environment *before* starting the absorption gives you an independent,
 continuously-mirrored safety net that exists outside the KRaft quorum
 being reshaped — at the cost of needing that bridge validated (mirror lag
@@ -58,16 +58,16 @@ flowchart LR
     subgraph BEFORE["Before absorption"]
         primary1["primary — dc-primary"]
         passive1["passive — dc-passive, standalone"]
-        prodsupport1[("prodsupport — dc-prodsupport")]
-        primary1 -- "Cluster Link, offset sync" --> prodsupport1
+        drbridge1[("drbridge — dc-drbridge")]
+        primary1 -- "Cluster Link, offset sync" --> drbridge1
     end
 
     subgraph AFTER["After wipe + rejoin"]
         primary2["primary — id 1, dc-primary, controller"]
         passive2["passive — id 2, dc-passive, broker only"]
-        prodsupport2[("prodsupport — unchanged")]
+        drbridge2[("drbridge — unchanged")]
         primary2 <-. "one KRaft cluster" .-> passive2
-        primary2 -- "Cluster Link, still active" --> prodsupport2
+        primary2 -- "Cluster Link, still active" --> drbridge2
     end
 
     BEFORE -- "unregister, wipe, reformat, rejoin passive" --> AFTER
@@ -76,18 +76,19 @@ flowchart LR
 ### Procedure — Track 1: Docker Compose (fastest)
 
 1. **Stand up three single-broker clusters** with `confluentinc/cp-server:latest`
-   — `primary` (rack `dc-primary`), `passive` (rack `dc-passive`), `prodsupport`
-   (rack `dc-prodsupport`) — combined KRaft mode (broker + controller in one
+   — `primary` (rack `dc-primary`), `passive` (rack `dc-passive`), `drbridge`
+   (rack `dc-drbridge`) — combined KRaft mode (broker + controller in one
    process; fine for local experimentation only, not a production pattern).
 2. **Seed `primary`** with a demo topic and a few messages, standing in for
    live production traffic.
-3. **Create the Cluster Link `primary → prodsupport`**
+3. **Create the Cluster Link `primary → drbridge`**
    (`kafka-cluster-links --create`, `bootstrap.servers=<primary>`,
    `consumer.offset.sync.enable=true`). Leave `acl.sync.enable` off — it
    requires `authorizer.class.name` configured on the destination, which
    this lightweight rig doesn't set up. ACL/RBAC portability for the real
-   migration is handled separately by the `kafka-admin` tool — see
-   [Kafka-Admin — Topic and RBAC Migration Tooling](kafka-admin-topic-rbac-tool.md).
+   migration is handled separately by a YAML-driven AdminClient/MDS admin
+   tool — see
+   [YAML-Driven Topic & RBAC Admin Tooling](yaml-topic-rbac-admin-tool.md).
 4. **Create the mirror topic** and confirm mirror lag is ≈ 0 via
    `kafka-replica-status --include-mirror` (`LastCaughtUpLagMs: 0` on every
    partition) — this is the hard gate before step 5.
@@ -109,9 +110,9 @@ flowchart LR
    `--replica-placement` JSON constraining one replica to each rack;
    confirm `Replicas: 1,2` in `kafka-topics --describe`.
 8. **Rehearse the actual failure scenario** — the one that matters: stop
-   `primary`, run `kafka-mirrors --promote` on the Prod Support mirror,
+   `primary`, run `kafka-mirrors --promote` on the DR Bridge mirror,
    confirm it reaches `STOPPED` (promoted), produce a new message, consume
-   everything back from Prod Support with Primary fully down.
+   everything back from DR Bridge with Primary fully down.
 
 ### Procedure — Track 2: real cp-ansible (package install + systemd)
 
@@ -123,9 +124,9 @@ systemd under Docker (`privileged`, `cgroup: host`); Ansible reaches them
 via the `community.docker.docker` connection plugin (`docker exec`), not
 SSH, since that image ships no sshd.
 
-This track's topology is deliberately closer to the real client scenario
-than Track 1: three environments (`cp-primary-host` = Active, `cp-passive-host`
-= Passive, `cp-prodsupport-host` = Prod Support), each running broker +
+This track's topology deliberately models a common brownfield CP DR
+topology more closely than Track 1: three environments (`cp-primary-host` = Active, `cp-passive-host`
+= Passive, `cp-drbridge-host` = DR Bridge), each running broker +
 KRaft controller + Schema Registry + Kafka Connect, **plus** Confluent
 Replicator deployed as a Connect executable on `cp-passive-host` mirroring
 `payments.transaction.completed` from Active — the *existing* DR pipe the
@@ -155,10 +156,10 @@ from nothing (e.g. after a `99-teardown.sh` or a Docker Desktop restart):
 cd ansible
 ./scripts/00-up-hosts.sh          # docker compose up the 3 hosts, install python3.11+pip+sudo, pip install packaging/PyYAML
 ./run.sh ansible -i ansible/inventories/test-connectivity.yml all -m ping   # sanity check — note: run.sh cd's up one dir, so inventory paths are ansible/inventories/... from here
-for inv in primary passive prodsupport; do
+for inv in primary passive drbridge; do
   ./run.sh ansible-playbook -i "ansible/inventories/${inv}.yml" confluent.platform.all
 done
-./scripts/02-seed-and-link.sh      # create + seed the topic on Active, create the Active -> Prod Support Cluster Link
+./scripts/02-seed-and-link.sh      # create + seed the topic on Active, create the Active -> DR Bridge Cluster Link
 ```
 
 Then start the ShadowTraffic producer (not wrapped in a script — run
@@ -176,8 +177,7 @@ ShadowTraffic requires license env vars (`LICENSE_ID`, `LICENSE_EMAIL`,
 `LICENSE_ORGANIZATION`, `LICENSE_EDITION`, `LICENSE_EXPIRATION`,
 `LICENSE_SIGNATURE`) even at this low a volume — the container exits
 immediately without them. Pass them via `--env-file license.env` (gitignored,
-per-project — do not reuse a license file from a different client
-engagement/repo). See
+per-project — do not reuse a license file from another project). See
 [ShadowTraffic — Confluent Cloud Datagen](shadowtraffic-confluent-cloud-datagen.md)
 for the full flag reference.
 
@@ -186,7 +186,7 @@ From here, run the 5-stage cutover via the `Workflow` tool against
 → MRC Absorption → Sever and Clear) rather than the individual
 `ansible/stages/0N-*.sh` scripts by hand — the script encodes the same
 commands plus the gate logic (Stage 2 refuses to let Stage 3 stop Replicator
-until a marker message is proven to land on **both** Prod Support and
+until a marker message is proven to land on **both** DR Bridge and
 Passive) and preflight checks (kill stray `ansible-playbook` processes
 before every stage).
 
@@ -224,7 +224,7 @@ up front so you don't rediscover them one at a time:
    in `deactivating` waiting for a controller that would never come back,
    requiring a hard kill.
 7. **Docker Desktop's VM memory is ONE shared pool across every container.**
-   `cp-primary-host`, `cp-passive-host`, `cp-prodsupport-host`, and
+   `cp-primary-host`, `cp-passive-host`, `cp-drbridge-host`, and
    `shadowtraffic-active-producer` all run inside the same single Linux VM
    Docker Desktop manages — confirmed via `docker exec <host> free -h`
    reporting identical total/swap figures on all three hosts, and `docker
@@ -272,9 +272,8 @@ up front so you don't rediscover them one at a time:
 
 - Rehearsing a **live broker absorption into an existing quorum** (as
   opposed to a greenfield build) before touching real infrastructure —
-  particularly when hardware constraints rule out provisioning new
-  capacity for the target MRC, forcing reuse of the source cluster's own
-  hosts.
+  particularly if you can't provision new hardware for the target MRC and
+  must reuse the source cluster's own hosts.
 - Validating that a **Cluster Linking DR bridge** genuinely survives the
   primary cluster going down mid-migration, before committing to it as the
   sole safety net during a risky transition window.
@@ -291,7 +290,7 @@ up front so you don't rediscover them one at a time:
   involves SR/Connect specifically.
 - **No stretched Kafka Connect worker pool across DCs is rehearsed or
   recommended here** — each environment runs its own independent Connect
-  worker pool (Active's, Prod Support's) plus the separate Replicator
+  worker pool (Active's, DR Bridge's) plus the separate Replicator
   executable on Passive; none share a `group.id`/internal-topics across
   hosts. Checked against `confluent-docs`: Confluent for Kubernetes (CFK)
   documents a supported stretched-Connect-group pattern for K8s deployments
@@ -316,12 +315,12 @@ up front so you don't rediscover them one at a time:
   cluster link keeps up while reassignment traffic competes for the same
   inter-DC bandwidth cannot be answered by this rig.
 - **No real multi-controller quorum.** Both tracks run a single KRaft
-  controller (on Primary) throughout. If any real Passive Region host also
-  carries the controller role — relevant to a 2:2:1 quorum + tiebreaker
-  design — adding or removing it from a *live* quorum is a materially
-  different and more dangerous operation than anything rehearsed here:
+  controller (on Primary) throughout. If a source host also carries the
+  controller role, e.g. in a 2:2:1 quorum + tiebreaker design, adding or
+  removing it from a *live* quorum is a materially different and more
+  dangerous operation than anything rehearsed here:
   quorum majority must never drop below majority mid-swap, or the metadata
-  log is lost outright, not merely DR coverage. Confirm which real hosts
+  log is lost outright, not merely DR coverage. Confirm which hosts
   carry the controller role before assuming this rig's broker-only rejoin
   procedure covers them.
 - **Toy scale.** One broker per cluster, a handful of messages. Reassignment
@@ -331,8 +330,8 @@ up front so you don't rediscover them one at a time:
   rig-specific procedure and one session's observed environment quirks
   (Docker/ansible-core/geerlingguy-image behavior) rather than claims
   documented by Confluent — that category isn't MCP-checkable, the same
-  reasoning applied to the internals of the `kafka-admin` tool in
-  [Kafka-Admin — Topic and RBAC Migration Tooling](kafka-admin-topic-rbac-tool.md).
+  reasoning applied to admin-tool internals in
+  [YAML-Driven Topic & RBAC Admin Tooling](yaml-topic-rbac-admin-tool.md).
   The genuinely Confluent-specific claims embedded in the procedure — KRaft
   broker unregister/reformat mechanics, Cluster Linking migration steps and
   ACL-sync/authorizer requirement, cp-ansible's Python version matrix and
@@ -347,8 +346,8 @@ up front so you don't rediscover them one at a time:
 - [x86 → LinuxONE Cluster Linking Migration](x86-to-linuxone-cluster-linking-migration.md)
   — the audit → validate → cutover → evidence-collection runbook shape this
   migration's Cluster Linking cutover follows.
-- [Kafka-Admin — Topic and RBAC Migration Tooling](kafka-admin-topic-rbac-tool.md)
-  — the tool that handles topic/RBAC provisioning and the ACL/RBAC
+- [YAML-Driven Topic & RBAC Admin Tooling](yaml-topic-rbac-admin-tool.md)
+  — the admin tooling that handles topic/RBAC provisioning and the ACL/RBAC
   portability this rig deliberately skips.
 - [SLA Tiers](../concepts/sla-tiers.md) — informs how aggressively to
   pursue a zero-DR-coverage-window mitigation like this one.

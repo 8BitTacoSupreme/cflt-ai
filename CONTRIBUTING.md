@@ -99,17 +99,17 @@ layer wins; see `canon/stack.py`). Two confidentiality tiers:
 
 1. Create a private repo whose paths mirror the canon layers, e.g.:
    ```
-   ~/clients/citi-canon/
-     customer/citi/overrides.yaml          # only keys that differ; each cites an ADR
-     customer/citi/adrs/adr-001.md
-     customer/citi/profiles/engineer.json  # optional per-client profiles
-     engagement/citi-2026-payments/overrides.yaml
+   ~/clients/examplebank-canon/
+     customer/examplebank/overrides.yaml          # only keys that differ; each cites an ADR
+     customer/examplebank/adrs/adr-001.md
+     customer/examplebank/profiles/engineer.json  # optional per-client profiles
+     engagement/examplebank-2026-payments/overrides.yaml
    ```
    (Model the contents on the committed `canon/customer/acme-bank/` demo.)
-2. Point the stack at it: `export CFLT_CANON_EXTERNAL_PATH=~/clients/citi-canon`
+2. Point the stack at it: `export CFLT_CANON_EXTERNAL_PATH=~/clients/examplebank-canon`
    (os-pathsep list; `~` expanded). Repo-internal canon is always searched first, so
    external roots cannot shadow shared IP.
-3. Resolve: `resolve_stack(customer="citi", engagement="citi-2026-payments")`.
+3. Resolve: `resolve_stack(customer="examplebank", engagement="examplebank-2026-payments")`.
 
 The shared floor bundle (`tools/canon_preload.py`) only globs the repo's `canon/` —
 client overlays enter context **only** via an explicit `resolve_stack` selection,
@@ -132,7 +132,7 @@ To lift a generalized override from a client silo into shareable canon, scrubbin
 client identifiers:
 
 ```bash
-python3 tools/promote-canon.py --from customer/citi --to industry/fsi --scrub citi,acct-id
+python3 tools/promote-canon.py --from customer/examplebank --to industry/fsi --scrub examplebank,acct-id
 ```
 
 It writes a **paste-safe** candidate + diff to `outputs/promote/` (never into

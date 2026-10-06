@@ -239,7 +239,7 @@ From wiki/activity/2026-04.md (existing entry format):
     Use Optional[str], List[Dict] from typing (Python 3.9 compat per STATE.md decision). Never use X|Y union syntax.
   </action>
   <verify>
-    <automated>cd /Users/jhogan/cflt-ai && python3 -m pytest tests/test_apply_engine.py -v --tb=short -q</automated>
+    <automated>cd <repo-root> && python3 -m pytest tests/test_apply_engine.py -v --tb=short -q</automated>
   </verify>
   <acceptance_criteria>
     - tools/profiles/read-only.json contains '"allowed_operations": []'

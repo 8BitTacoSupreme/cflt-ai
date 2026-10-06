@@ -724,8 +724,8 @@ STUB.md for other types pending H.3c follow-up phases).
     ## Examples
 
     ```
-    /dsp:scaffold producer my-payments-producer --profile developer/sandbox --operator jhogan
-    /dsp:scaffold producer my-payments-producer --profile engineer --prod --operator jhogan
+    /dsp:scaffold producer my-payments-producer --profile developer/sandbox --operator <your-id>
+    /dsp:scaffold producer my-payments-producer --profile engineer --prod --operator <your-id>
     /dsp:scaffold producer my-payments-producer --profile read-only      # blocked
     /dsp:scaffold producer my-payments-producer --profile developer/sandbox --prod   # blocked (cross-family)
     ```

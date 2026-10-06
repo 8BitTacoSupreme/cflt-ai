@@ -67,11 +67,10 @@ causes the adapter to fail to publish — observed as connection-establishment f
 rather than per-record errors, which makes the misconfiguration look like a network or
 auth issue.
 
-> ⚠️ unverified — the GZIP-only constraint is documented in customer-facing FSI runbooks
-> and the 2026-04-29 /review report (claim oic-14) but is not surfaced in the public
-> Oracle docs nor in `confluent-docs` (Oracle product). The behavioral assertion
+> ⚠️ unverified — the GZIP-only constraint is operationally reported but is not surfaced
+> in the public Oracle docs nor in `confluent-docs` (Oracle product). The behavioral assertion
 > (zstd "breaks the connection" rather than failing per record) is operationally
-> reported and should be re-confirmed before authoring customer-facing guidance.
+> reported and should be re-confirmed before authoring external guidance.
 
 Operational guidance: **do not set `compression.type` in the OIC Additional Properties
 table**. Let the adapter pick GZIP. On the topic side, set `compression.type=producer`

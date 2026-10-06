@@ -173,7 +173,7 @@
 
     # ---- IPv6: recorded posture item, NOT a gate ----------------------------
     # confluent-docs lists IPv6 under "not yet supported on s390x" -- a CP-layer
-    # statement at the same scope as the FIPS line, which the partner team has
+    # statement at the same scope as the FIPS line, which IBM/Confluent have
     # since moved. s390x/RHEL/OCP themselves support IPv6 fine. We therefore
     # RECORD the cluster network mode rather than block on it. If CP's s390x build
     # genuinely lacks IPv6 listener support, it surfaces as broker bind failures,
@@ -189,7 +189,7 @@
         msg: >-
           IPv6 {{ 'ENABLED' if (ipv6_raw.content | default('MQ==') | b64decode | trim) == '0' else 'disabled' }}
           on this node. Confluent lists IPv6 under "not yet supported on s390x" (CP-layer).
-          Confirm CP-on-Z IPv6 listener support with the IBM/Confluent partner team at kickoff
+          Confirm CP-on-Z IPv6 listener support with IBM/Confluent before deployment
           and record the answer in the BOM. Do not hardcode the public matrix into design.
 
     # ---- Chip topology (drives inference TM placement) ----------------------
@@ -214,8 +214,8 @@
         msg: "CPACF {{ 'available — enable accelerated OpenSSL/JSSE for Kafka TLS' if cpacf_check.rc == 0 else 'NOT detected' }}"
 
     # Crypto Express HSM — FIPS 140 Level 4, the strongest hardware crypto
-    # certification available. Bonus, not blocker: if the client wants keystore
-    # material in an HSM, Z is best-in-industry, not a compromise.
+    # certification available. Bonus, not blocker: if keystore material in an HSM
+    # is required, Z is best-in-industry, not a compromise.
     - name: Detect Crypto Express adapters
       ansible.builtin.command: ls /sys/bus/ap/devices
       register: cryptoexpress

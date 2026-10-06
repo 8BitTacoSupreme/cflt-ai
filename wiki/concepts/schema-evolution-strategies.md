@@ -18,7 +18,7 @@ Schema governance for the FSI Kafka Platform uses Apache Avro as the mandatory p
 
 ### Schema Format
 
-All production topics use Apache Avro. Protobuf is allowed with C4E approval for teams with existing Protobuf infrastructure. JSON Schema is not permitted in production. Rationale in ADR-001: compact binary serialization, strong typing with financial logical types (decimal, timestamp-millis), well-defined compatibility enforcement, and first-class support across Connect, Flink SQL, and TableFlow.
+All production topics use Apache Avro. Protobuf is allowed with platform-team approval for teams with existing Protobuf infrastructure. JSON Schema is not permitted in production. Rationale in ADR-001: compact binary serialization, strong typing with financial logical types (decimal, timestamp-millis), well-defined compatibility enforcement, and first-class support across Connect, Flink SQL, and TableFlow.
 
 ### Compatibility Modes by SLA Tier
 

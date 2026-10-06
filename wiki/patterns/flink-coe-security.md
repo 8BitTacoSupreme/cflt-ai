@@ -13,7 +13,7 @@ last_validated: 2026-07-30
 
 # Flink COE — Security (RBAC, Service Accounts, Principals)
 
-> ⚠️ Stub — seeded with validated facts; expand per client use cases once chosen. The RBAC role catalog and the service-account-principal model are the load-bearing pieces to get right before any regulated data flows.
+> ⚠️ Stub — seeded with validated facts; expand per use case once chosen. The RBAC role catalog and the service-account-principal model are the load-bearing pieces to get right before any regulated data flows.
 
 ## Summary
 
@@ -22,7 +22,7 @@ Security sub-page for the [Flink COE](flink-coe-managed-cc-overview.md). CC Flin
 
 ## Pattern
 
-### Two role planes (CC — seed, validate before customer commit)
+### Two role planes (CC — seed, validate before production commit)
 
 Users need **both** planes; missing either fails at submit or at first topic access.
 
@@ -48,7 +48,7 @@ Users need **both** planes; missing either fails at submit or at first topic acc
 - **Terraform:** a `confluent_flink_statement` must have a principal — `flink_principal_id` on the provider (or `FLINK_PRINCIPAL_ID`) or a `principal {}` block on the resource. Omitting it fails with `one of provider.flink principal id … must be set`. (See [Overview](flink-coe-managed-cc-overview.md) blockers.)
 - **`DROP TABLE` deletes the underlying topic + data** — withhold table-drop from developer roles; change-control any drop.
 
-### CMF / CP contrast (for the client's self-managed comparison)
+### CMF / CP contrast (for your organization's self-managed comparison)
 
 - CMF roles: `FlinkDeveloper` (submit/run + own workspaces), `FlinkAdmin` (full env admin + pools), `Operator` (metadata-only). **`FlinkEnvironmentAdmin` is NOT a real role** — a doc inconsistency in some materials; use `FlinkDeveloper`.
 - FSI RBAC shape (`fsi-dsp` layer 05): bind to **LDAP/IdP groups, never individuals** (revocation via group membership → SOX/FFIEC access-change logging); scope to the Flink environment, not cluster-wide; four separate bindings (source read, sink write+txn, SR read, SR write) for independent auditability.

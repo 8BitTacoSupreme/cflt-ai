@@ -547,17 +547,17 @@ All test infrastructure for this phase is new:
 ### Primary (HIGH confidence)
 
 - `.planning/phases/03A-act-rail-plan/03A-CONTEXT.md` — all locked decisions, gate architecture, skill interface
-- `/Users/jhogan/cflt-ai/tools/review-to-docx.py` — tools/ module pattern, CLI structure, canon.stack usage
-- `/Users/jhogan/cflt-ai/canon/stack.py` — resolve_stack(), active_layers(), provenance_footer() signatures
-- `/Users/jhogan/cflt-ai/.claude/commands/ask.md` — skill file structure, step organization, flag parsing
-- `/Users/jhogan/cflt-ai/tests/golden/ask/test_golden_ask.py` — golden harness pattern, load_case(), parametrize
-- `/Users/jhogan/cflt-ai/raw/repos/fsi-dsp/MANIFEST.yaml` — capability IDs, types, 9 roles + 2 modules + scenarios
+- `<repo-root>/tools/review-to-docx.py` — tools/ module pattern, CLI structure, canon.stack usage
+- `<repo-root>/canon/stack.py` — resolve_stack(), active_layers(), provenance_footer() signatures
+- `<repo-root>/.claude/commands/ask.md` — skill file structure, step organization, flag parsing
+- `<repo-root>/tests/golden/ask/test_golden_ask.py` — golden harness pattern, load_case(), parametrize
+- `<repo-root>/raw/repos/fsi-dsp/MANIFEST.yaml` — capability IDs, types, 9 roles + 2 modules + scenarios
 
 ### Secondary (MEDIUM confidence)
 
-- `/Users/jhogan/cflt-ai/.mcp.json` — existing MCP entry pattern (npx -y, env file pattern)
-- `/Users/jhogan/cflt-ai/tools/__init__.py` — hyphenated module registration (clarifies naming convention for new modules)
-- `/Users/jhogan/cflt-ai/.planning/STATE.md` — accumulated decisions from all previous phases
+- `<repo-root>/.mcp.json` — existing MCP entry pattern (npx -y, env file pattern)
+- `<repo-root>/tools/__init__.py` — hyphenated module registration (clarifies naming convention for new modules)
+- `<repo-root>/.planning/STATE.md` — accumulated decisions from all previous phases
 
 ### Tertiary (LOW confidence)
 

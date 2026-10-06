@@ -1,6 +1,6 @@
 ---
 title: Terraform CI/CD for Confluent Cloud over Private Networking — Deployment & Operations Runbook
-subtitle: GitHub Actions + self-hosted ARC runners in-VPC, two-plane Terraform, OIDC auth; Precisely CDC landing zone
+subtitle: GitHub Actions + self-hosted ARC runners in-VPC, two-plane Terraform, OIDC auth; third-party CDC agent landing zone
 audience: Platform / C4E (owners), app teams (data-plane PRs), cloud networking (VPC + private DNS)
 validated: 2026-07-29 against confluent-docs (Terraform provider resource inventory, two-tier auth, terraform-security identity-pool/OIDC + state guidance) + Terraform registry (confluentinc/confluent 2.80.0) + local canon (topic-naming, schema-registry-adoption-playbook, fsi-governance-automation). The management-vs-data-plane reachability split is provider mechanics (kafka/schema resources require the private rest_endpoint), reasoned not doc-cited.
 confidence: high
@@ -11,7 +11,7 @@ related-canon: patterns/terraform-cicd-confluent-private-networking.md, concepts
 # Terraform CI/CD for Confluent Cloud over Private Networking
 
 **Purpose:** Stand up and operate GitHub Actions CI/CD for Terraform-managed Confluent Cloud
-when the cluster is on private networking, and manage the **Precisely → Confluent Cloud CDC
+when the cluster is on private networking, and manage the **third-party CDC agent (e.g. Precisely) → Confluent Cloud CDC
 landing zone** through it.
 
 > **The constraint that drives everything.** Data-plane resources (`confluent_kafka_topic`,
@@ -33,7 +33,7 @@ landing zone** through it.
     `tcp/443` inbound from the runner CIDR** — the most common cause of a private-IP-resolves-
     but-times-out failure (§7). See [Private Networking](../../wiki/concepts/private-networking.md).
 - A **VPC (or peered CI subnet)** with the private path to Confluent Cloud — the same one
-  Precisely CDC agents use.
+  the CDC agents use.
 - **EKS cluster** (or ASG host pool) in that VPC to run **Actions Runner Controller (ARC)**.
 - Cloud secrets manager (Vault / AWS Secrets Manager / GSM / Key Vault) for the cluster API key.
 - Remote TF backend (S3+DynamoDB / GCS / azurerm), SSE-KMS encrypted, reachable via VPC endpoint.
@@ -121,7 +121,7 @@ Confluent private DNS zone (see §6 — this is the #1 failure mode).
 
 ```yaml
 # runner-scaleset.values.yaml  (helm: gha-runner-scale-set)
-githubConfigUrl: https://github.com/goodlabs/cflt-platform
+githubConfigUrl: https://github.com/<org>/<repo>
 githubConfigSecret: arc-github-app          # GitHub App creds for ARC
 minRunners: 0                               # ephemeral: scale to zero when idle
 maxRunners: 6
@@ -201,14 +201,14 @@ Both jobs run on the in-VPC pool for simplicity; only `data` strictly requires i
 
 ---
 
-## 5. Precisely CDC Landing Zone (named section)
+## 5. Third-party CDC Agent Landing Zone (e.g. Precisely)
 
-Precisely Connect CDC agents run **in-VPC** (or on-prem via the same private path) and
+Third-party CDC agents (e.g. Precisely Connect CDC) run **in-VPC** (or on-prem via the same private path) and
 produce to Confluent Cloud over PrivateLink. Terraform does **not** manage the agents — it
 manages the Confluent landing zone they write into. Almost all of it is **plane B** (private,
 in-VPC runner), except the network/service-account scaffolding in plane A.
 
-**Plane A (platform/) — scaffolding for Precisely:**
+**Plane A (platform/) — scaffolding for the CDC agents:**
 - The PrivateLink plane-A resources the CDC agents connect through (the same path the runner
   rides — co-locate the runner subnet here). **Tier-dependent, and PLATT is legacy:**
   - **Enterprise (FSI baseline):** `confluent_gateway` + `confluent_access_point` + your
@@ -219,7 +219,7 @@ in-VPC runner), except the network/service-account scaffolding in plane A.
   - **DNS:** wire the two-step CNAME + wildcard access-point zone into the runner's resolver
     for **both** Kafka and SR (see §6). If agents are **on-prem/mainframe**, they can't reach
     PL directly — route through a shared-services VPC you own, then PL; co-locate the runner there.
-- A **dedicated service account per Precisely agent/app**: `confluent_service_account` +
+- A **dedicated service account per CDC agent/app**: `confluent_service_account` +
   `confluent_api_key` (cluster-scoped) for the agent to authenticate as. Least privilege — one
   SA per agent, never shared.
 
@@ -242,25 +242,25 @@ resource "confluent_schema" "cdc_customer_value" {
   schema       = file("${path.module}/schemas/customer.avsc")
 }
 
-# Least-privilege ACLs for the Precisely agent's service account.
-resource "confluent_kafka_acl" "precisely_write" {
+# Least-privilege ACLs for the CDC agent's service account.
+resource "confluent_kafka_acl" "cdc_agent_write" {
   resource_type = "TOPIC"
   resource_name = "corebanking."          # prefix
   pattern_type  = "PREFIXED"
-  principal     = "User:${data.terraform_remote_state.platform.outputs.precisely_sa_id}"
+  principal     = "User:${data.terraform_remote_state.platform.outputs.cdc_agent_sa_id}"
   operation     = "WRITE"
   permission    = "ALLOW"
   host          = "*"
 }
 ```
 
-**Precisely-specific notes:**
+**CDC-agent-specific notes:**
 - **Schema Registry needs its own private DNS resolution** from the runner — the CDC schema
   registration (`confluent_schema`) fails with `no such host` on the SR hostname even when
   Kafka resolves fine. Verify both.
-- Give the Precisely SA **WRITE on its topic prefix + SR write on its subject prefix** only —
+- Give the CDC agent SA **WRITE on its topic prefix + SR write on its subject prefix** only —
   not cluster-wide. RBAC role bindings scoped by `crn_pattern`.
-- If Precisely targets the mainframe (z/OS CDC via Precisely Connect CDC / SQData), the produce
+- If the CDC agent targets the mainframe (e.g. z/OS CDC via Precisely Connect CDC / SQData), the produce
   path is agent → CC over PrivateLink; Terraform's job stops at the CC landing zone. Do not try
   to model the agent in TF.
 - Topic + schema changes for new CDC tables are the **high-churn plane-B PRs** — this is the
@@ -284,7 +284,7 @@ resource "confluent_kafka_acl" "precisely_write" {
    provider block + principal, §2).
 5. **OIDC, no static keys** → confirm no `CONFLUENT_CLOUD_API_KEY` in GitHub repo/org secrets;
    creds come from the secrets manager at run time.
-6. **Precisely path** → the CDC agent SA can WRITE to its topics (produce a test CDC record);
+6. **CDC agent path** → the CDC agent SA can WRITE to its topics (produce a test CDC record);
    ACLs deny everything else.
 
 ---
@@ -300,7 +300,7 @@ resource "confluent_kafka_acl" "precisely_write" {
 | Half-applied (cluster made, topics failed) | Single apply, both planes, public runner | Split state; `data` `needs: platform` |
 | Plane-A `403` from CI | `confluent_ip_filter` excludes runner egress IP | Add NAT EIP to an allowlisted `confluent_ip_group` |
 | Topic "can't authenticate" despite valid cloud key | `cloud_api_key` used where a cluster-scoped key + `rest_endpoint` is required | Use the data-plane provider alias with the cluster key |
-| Precisely SA can't produce | ACL/RBAC too narrow or wrong principal | Grant WRITE on the topic prefix + SR write on the subject prefix, scoped by `crn_pattern` |
+| CDC agent SA can't produce | ACL/RBAC too narrow or wrong principal | Grant WRITE on the topic prefix + SR write on the subject prefix, scoped by `crn_pattern` |
 | State lock stuck | Prior run killed mid-apply | Release the DynamoDB/GCS lock; re-run |
 
 ---
@@ -314,6 +314,6 @@ resource "confluent_kafka_acl" "precisely_write" {
 - **State hygiene:** SSE-KMS + versioning + IAM-restricted; reach the backend via VPC endpoint.
   State holds API-key secrets — treat as sensitive, audit access (CloudTrail/GCS logs).
 - **Least privilege:** separate identities for plane A (`EnvironmentAdmin`, `crn_pattern`-scoped)
-  and plane B (cluster-scoped); a distinct SA per Precisely agent.
+  and plane B (cluster-scoped); a distinct SA per CDC agent.
 - **Guardrails:** `prevent_destroy` on environment/cluster/network; manual approval gate on the
   `platform` job; app teams only PR into `data/`.

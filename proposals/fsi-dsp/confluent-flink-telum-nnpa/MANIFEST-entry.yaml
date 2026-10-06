@@ -31,9 +31,9 @@
 
     # confluent-docs ("Linux on IBM Z (s390x) support") lists these under "not yet
     # supported on s390x". They are CP-LAYER statements, not platform statements —
-    # s390x/RHEL/OCP support all of them. The public matrix lags actual state; this
-    # POC runs with the IBM/Confluent partner team, who are authoritative. Treat each
-    # as a recorded posture item confirmed at kickoff, NOT a design-time blocker.
+    # s390x/RHEL/OCP support all of them. The public matrix lags actual state; confirm
+    # with IBM/Confluent before deployment, who are authoritative. Treat each
+    # as a recorded posture item, NOT a design-time blocker.
     posture_items_confirm_with_partner_team:
       fips_mode:
         status: "enabled"
@@ -44,7 +44,7 @@
         implemented_by: ["ansible/02-fips-mode.yml", "helm/cfk-operator-values.yaml"]
       ipv6:
         status: "recorded, not gated"
-        note: "Confirm CP-on-Z IPv6 listener support at kickoff; absence surfaces as broker bind failures, not a clean error."
+        note: "Confirm CP-on-Z IPv6 listener support with IBM/Confluent before deployment; absence surfaces as broker bind failures, not a clean error."
       connectors_with_native_os_libraries:
         status: "runtime fact, not a support-matrix fact"
         note: "Connectors in scope (Mongo sink, CDC) are pure-Java. Audit native deps per plugin and record in the BOM."

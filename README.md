@@ -54,7 +54,7 @@ Modes: `--mode ephemeral` (quick answer), `--mode report` (structured output), `
 Point at a file and get a structured review with deterministic claim extraction, premise-challenge validation, and provenance-stamped output.
 
 ```
-/review kafka-dr-framework-v3.md
+/review my-dr-proposal.md
 ```
 
 Supports multi-document input (deck + tfvars + runbook as a single scope), customer overlays for differential canon, and `.docx` export with full provenance footer.

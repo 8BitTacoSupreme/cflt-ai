@@ -21,34 +21,34 @@ def promote(project_root):
 
 
 def test_client_name_inferred(promote):
-    assert promote._client_name("customer/citi") == "citi"
-    assert promote._client_name("engagement/citi-2026-payments") == "citi-2026-payments"
+    assert promote._client_name("customer/examplebank") == "examplebank"
+    assert promote._client_name("engagement/examplebank-2026-payments") == "examplebank-2026-payments"
 
 
 def test_source_keys_become_todo(promote):
-    out = promote._scrub_string("override_source", "customer/citi/adr-001", ["citi"], "customer/citi")
+    out = promote._scrub_string("override_source", "customer/examplebank/adr-001", ["examplebank"], "customer/examplebank")
     assert out.startswith("TODO: ADR-xxx")
-    assert "citi" not in out  # placeholder is client-free
+    assert "examplebank" not in out  # placeholder is client-free
 
 
 def test_scrub_redacts_client_terms_in_values_and_keys(promote):
     source = {
         "producer": {
             "compression_type": "zstd",
-            "override_source": "customer/citi/adr-001",
+            "override_source": "customer/examplebank/adr-001",
         },
-        "environment_guard": {"pattern": "citi-prod-sandbox", "enforcement": "advisory"},
-        "citi-mainframe": {"bridge": "ibm-mq"},  # client identifier in a KEY
-        "note": "Tuned for Citi market-data desk",
+        "environment_guard": {"pattern": "examplebank-prod-sandbox", "enforcement": "advisory"},
+        "examplebank-mainframe": {"bridge": "ibm-mq"},  # client identifier in a KEY
+        "note": "Tuned for ExampleBank market-data desk",
     }
-    terms = ["citi", promote._client_name("customer/citi")]
-    scrubbed = promote._scrub(source, terms, "customer/citi")
+    terms = ["examplebank", promote._client_name("customer/examplebank")]
+    scrubbed = promote._scrub(source, terms, "customer/examplebank")
     dumped = yaml.safe_dump(scrubbed)
 
     # No client identifier survives anywhere — values OR keys.
-    assert "citi" not in dumped.lower()
+    assert "examplebank" not in dumped.lower()
     # The client-named key was scrubbed, not passed through verbatim.
-    assert "citi-mainframe" not in scrubbed
+    assert "examplebank-mainframe" not in scrubbed
     # Source citation rewritten to a placeholder.
     assert scrubbed["producer"]["override_source"].startswith("TODO: ADR-xxx")
     # Guard pattern is redacted (left for the operator to generalize), not auto-rewritten.
@@ -57,17 +57,17 @@ def test_scrub_redacts_client_terms_in_values_and_keys(promote):
 
 def test_orphaned_redacted_marker_blocks_ready(promote, project_root, tmp_path, monkeypatch, capsys):
     """A scrub that lands mid-token leaves <redacted> and must report NOT READY."""
-    client = tmp_path / "customer" / "citi"
+    client = tmp_path / "customer" / "examplebank"
     client.mkdir(parents=True)
     (client / "overrides.yaml").write_text(
         "environment_guard:\n"
-        '  pattern: "citi-prod-sandbox"\n'
-        '  override_source: "customer/citi/adr-001"\n'
+        '  pattern: "examplebank-prod-sandbox"\n'
+        '  override_source: "customer/examplebank/adr-001"\n'
     )
     monkeypatch.setenv("CFLT_CANON_EXTERNAL_PATH", str(tmp_path))
     monkeypatch.setattr(
         promote.sys, "argv",
-        ["promote-canon.py", "--from", "customer/citi", "--to", "industry/fsi", "--scrub", "citi"],
+        ["promote-canon.py", "--from", "customer/examplebank", "--to", "industry/fsi", "--scrub", "examplebank"],
     )
     assert promote.main() == 0
     out = capsys.readouterr().out
@@ -77,24 +77,24 @@ def test_orphaned_redacted_marker_blocks_ready(promote, project_root, tmp_path, 
 
 def test_ensure_source_flags_keys_without_adr(promote):
     fragment = {"producer": {"compression_type": "zstd"}}  # no source
-    missing = promote._ensure_source(fragment, "customer/citi")
+    missing = promote._ensure_source(fragment, "customer/examplebank")
     assert "producer" in missing
     assert fragment["producer"]["override_source"].startswith("TODO: ADR-xxx")
 
 
 def test_end_to_end_writes_only_to_outputs(promote, project_root, tmp_path, monkeypatch, capsys):
     """A full run writes a paste-safe candidate to outputs/promote and never to canon/."""
-    client = tmp_path / "customer" / "citi"
+    client = tmp_path / "customer" / "examplebank"
     client.mkdir(parents=True)
     (client / "overrides.yaml").write_text(
         "producer:\n"
         '  compression_type: "zstd"\n'
-        '  override_source: "customer/citi/adr-001"\n'
+        '  override_source: "customer/examplebank/adr-001"\n'
     )
     monkeypatch.setenv("CFLT_CANON_EXTERNAL_PATH", str(tmp_path))
     monkeypatch.setattr(
         promote.sys, "argv",
-        ["promote-canon.py", "--from", "customer/citi", "--to", "industry/fsi", "--scrub", "citi"],
+        ["promote-canon.py", "--from", "customer/examplebank", "--to", "industry/fsi", "--scrub", "examplebank"],
     )
 
     canon_before = sorted((project_root / "canon").rglob("*.yaml"))
@@ -103,7 +103,7 @@ def test_end_to_end_writes_only_to_outputs(promote, project_root, tmp_path, monk
 
     assert rc == 0
     assert canon_before == canon_after  # canon/ untouched
-    candidate = project_root / "outputs" / "promote" / "customer__citi-candidate.yaml"
+    candidate = project_root / "outputs" / "promote" / "customer__examplebank-candidate.yaml"
     assert candidate.exists()
-    assert "citi" not in candidate.read_text().lower()  # whole file paste-safe
+    assert "examplebank" not in candidate.read_text().lower()  # whole file paste-safe
     assert "NOT READY" in capsys.readouterr().out  # TODO ADR remains

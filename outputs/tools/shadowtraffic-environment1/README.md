@@ -1,7 +1,7 @@
-# ShadowTraffic → environment1 (`datagen.users.enterprise`)
+# ShadowTraffic → Confluent Cloud (`datagen.users.enterprise`)
 
 Produces synthetic Avro records into the `datagen.users.enterprise` topic on the
-`environment1` Confluent Cloud Enterprise cluster (`lkc-rr00mwk`), validated
+Confluent Cloud Enterprise cluster (`lkc-xxxxx`) in your Confluent Cloud environment, validated
 against the already-registered `datagen.users-value` schema. No Confluent
 Gateway in the path — this connects straight to the cluster over the
 PrivateLink bootstrap endpoint.
@@ -36,8 +36,8 @@ run.sh                             # live run: produces to Kafka until Ctrl+C
 ## Before running
 
 1. **Network reachability.** The bootstrap endpoint
-   (`lkc-rr00mwk.us-east-2.aws.private.confluent.cloud:9092`) only resolves
-   over PrivateLink. The bastion (`ec2-user@16.59.44.204`) is on that network
+   (`<cluster-id>.<region>.aws.private.confluent.cloud:9092`) only resolves
+   over PrivateLink. The bastion (`ec2-user@<bastion-public-ip>`) is on that network
    but **does not have Docker installed** — you'll need to either:
    - install Docker on the bastion (`sudo yum install -y docker` / `sudo dnf install -y docker` depending on AMI, then `sudo systemctl start docker`), or
    - run this from a laptop/host that has a VPN or SSH tunnel into that VPC.
@@ -54,14 +54,14 @@ run.sh                             # live run: produces to Kafka until Ctrl+C
 
 3. **Populate `config/client.properties`:**
    - `bootstrap.servers` / the Schema Registry REST endpoint are already
-     filled in for `lkc-rr00mwk` / `lsrc-22jjg6y` — confirm the SR URL with
-     `confluent schema-registry cluster describe --environment env-0k9yy9`
+     templated for `lkc-xxxxx` / `lsrc-xxxxx` — confirm the SR URL with
+     `confluent schema-registry cluster describe --environment env-xxxxx`
      if it's changed.
    - Kafka API key/secret: from AWS Secrets Manager,
-     `confluent/environment1/datagen-enterprise-kafka-creds`.
+     `confluent/<env>/datagen-enterprise-kafka-creds`.
    - Schema Registry API key/secret: created alongside as
      `admin:schema_registry` in the same terraform apply — check whether it's
-     bundled into `confluent/environment1/admin-enterprise-kafka-creds` or
+     bundled into `confluent/<env>/admin-enterprise-kafka-creds` or
      needs pulling from terraform output/state before filling
      `basic.auth.user.info`.
 

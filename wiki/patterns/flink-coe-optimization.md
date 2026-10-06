@@ -13,7 +13,7 @@ last_validated: 2026-07-30
 
 # Flink COE — Optimization (CFUs, Autopilot, State, Statement Lifecycle)
 
-> ⚠️ Stub — seeded with validated facts; expand per client use cases once chosen. Deep tuning + triage already lives in [Flink Runtime Models](flink-runtime-models.md); this page is the CC-specific cost/scale layer.
+> ⚠️ Stub — seeded with validated facts; expand per use case once chosen. Deep tuning + triage already lives in [Flink Runtime Models](flink-runtime-models.md); this page is the CC-specific cost/scale layer.
 
 ## Summary
 
@@ -22,7 +22,7 @@ Optimization sub-page for the [Flink COE](flink-coe-managed-cc-overview.md). On 
 
 ## Pattern
 
-### CFU sizing & Autopilot (seed — validate before customer commit)
+### CFU sizing & Autopilot (seed — validate before production commit)
 
 - **`max_cfu` can be increased but never decreased.** GA ceiling **50 CFU/pool** (1,000 in Limited Availability). Size to realistic peak. Pools **scale to zero when idle** — no cost at rest.
 - **CFU burn ∝ throughput rate × state size**, not total event count — e.g. 50M events at hundreds–low-thousands ev/s settle at ~1–3 CFU via Autopilot.
@@ -45,7 +45,7 @@ Optimization sub-page for the [Flink COE](flink-coe-managed-cc-overview.md). On 
 ## Caveats
 
 - Checkpoint interval / state backend / storage are **not user-configurable** on CC (they are on CMF). If you need to tune them → CMF, not CC.
-- <!-- TODO: add per-use-case tuning (CDC, aggregation, fraud scoring) once the client picks workloads -->
+- <!-- TODO: add per-use-case tuning (CDC, aggregation, fraud scoring) once the adopting team picks workloads -->
 
 ## Related
 

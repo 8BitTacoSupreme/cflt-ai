@@ -332,7 +332,7 @@ $ARGUMENTS
 ```markdown
 ---
 artifact: module/topic
-operator: jhogan
+operator: <your-id>
 profile: engineer
 outcome: success
 canon_hash: a1b2c3d4e5f6789a
@@ -359,7 +359,7 @@ See plan: [create-topic-trade-events-2026-04-29.md](../../outputs/plans/create-t
 
 ## Provenance
 Canon stack: base + industry/fsi | Hash: a1b2c3d4e5f6789a | MANIFEST: 1.0.0 |
-Floor: sonnet | Operator: jhogan | Profile: engineer | Generated: 2026-04-29T14:32:00Z
+Floor: sonnet | Operator: <your-id> | Profile: engineer | Generated: 2026-04-29T14:32:00Z
 ```
 
 ### Pattern 5: Activity Log — Apply Entry Extension
@@ -374,7 +374,7 @@ Extends the existing dsp-plan entry format with apply-specific fields:
 **Output:** wiki/incidents/create-topic-trade-events-2026-04-29.md
 **Canon stack:** base + industry/fsi + customer/acme-bank
 **Gate results:** canon_compliance:pass, fsi_dsp_coverage:pass, confluent_docs_schema:pass, mcp_confluent_state:pass
-**Operator:** jhogan
+**Operator:** <your-id>
 **Profile:** engineer
 **Confirmation status:** confirmed
 **Execution result:** success
@@ -763,17 +763,17 @@ None — existing pytest infrastructure (conftest.py, parametrize pattern) cover
 ### Primary (HIGH confidence)
 
 - `.planning/phases/03B-act-rail-apply/03B-CONTEXT.md` — all locked decisions, profile architecture, confirmation pattern, incident schema
-- `/Users/jhogan/cflt-ai/tools/act_gates.py` — gate chain structure, Python 3.9 typing, PROJECT_ROOT pattern, importability requirements
-- `/Users/jhogan/cflt-ai/.claude/commands/dsp-plan.md` — skill file step structure, flag parsing, activity log emission, exact format to mirror
-- `/Users/jhogan/cflt-ai/canon/stack.py` — resolve_stack(), active_layers(), provenance_footer() — reused without modification
-- `/Users/jhogan/cflt-ai/tests/golden/act/test_golden_act.py` — golden harness structure to extend, REQUIRED_FIELDS pattern
-- `/Users/jhogan/cflt-ai/wiki/activity/2026-04.md` — current activity log format baseline
+- `<repo-root>/tools/act_gates.py` — gate chain structure, Python 3.9 typing, PROJECT_ROOT pattern, importability requirements
+- `<repo-root>/.claude/commands/dsp-plan.md` — skill file step structure, flag parsing, activity log emission, exact format to mirror
+- `<repo-root>/canon/stack.py` — resolve_stack(), active_layers(), provenance_footer() — reused without modification
+- `<repo-root>/tests/golden/act/test_golden_act.py` — golden harness structure to extend, REQUIRED_FIELDS pattern
+- `<repo-root>/wiki/activity/2026-04.md` — current activity log format baseline
 - Verified: `wiki/incidents/` directory exists (empty), `tools/profiles/` does not exist yet
 
 ### Secondary (MEDIUM confidence)
 
-- `/Users/jhogan/cflt-ai/.planning/STATE.md` — accumulated decisions from all phases (Python 3.9 compat, fsi-dsp:// URIs, activity log requirement)
-- `/Users/jhogan/cflt-ai/.planning/REQUIREMENTS.md` — ACTA-01 through ACTA-06 requirement text
+- `<repo-root>/.planning/STATE.md` — accumulated decisions from all phases (Python 3.9 compat, fsi-dsp:// URIs, activity log requirement)
+- `<repo-root>/.planning/REQUIREMENTS.md` — ACTA-01 through ACTA-06 requirement text
 - Live test run: `python3 -m pytest tests/ -q` → 524 passed 1.42s (baseline green before Phase 3b work)
 
 ### Tertiary (LOW confidence)

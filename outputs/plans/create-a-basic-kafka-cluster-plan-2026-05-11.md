@@ -1,6 +1,6 @@
-# Plan: Create a Basic Kafka cluster named `franz-smoke-01`
+# Plan: Create a Basic Kafka cluster named `smoke-test-01`
 
-**Request:** Create a Basic Kafka cluster named franz-smoke-01 in environment env-9y7opm on GCP in us-east1
+**Request:** Create a Basic Kafka cluster named smoke-test-01 in environment env-xxxxxx on GCP in us-east1
 **Overlay:** base (no `--overlay` provided)
 **Mode:** dry-run (read-only)
 **Generated:** 2026-05-11T14:19:31Z
@@ -39,7 +39,7 @@ Per ACT-06, this skill will **not** generate inline `resource "confluent_kafka_c
    `module/cc-cluster-basic`, type `terraform-module`, path `modules/cc-cluster-basic`,
    wrapping `confluent_kafka_cluster` with the `basic { }` block and a
    `confluent_environment` data source. Add it to `MANIFEST.yaml` per CNTR-04.
-2. **In the meantime**, provision `franz-smoke-01` via the Confluent Cloud Console or
+2. **In the meantime**, provision `smoke-test-01` via the Confluent Cloud Console or
    `confluent kafka cluster create` CLI (out-of-band), then wire it into
    `scenarios/cc-gcp/clusters.auto.tfvars` to use the matched artifact for the topic +
    SR + RBAC + DR layer.
@@ -57,8 +57,8 @@ request are listed first.
 
 | Source field | Value |
 |---|---|
-| `display_name` (cluster) | `franz-smoke-01` |
-| `environment_id` | `env-9y7opm` |
+| `display_name` (cluster) | `smoke-test-01` |
+| `environment_id` | `env-xxxxxx` |
 | `cloud` | `GCP` |
 | `region` | `us-east1` |
 | `availability` | `SINGLE_ZONE` (canonical default for `basic`) |
@@ -87,11 +87,11 @@ smoke test:
 - `min.insync.replicas = 2` and RF=3 are topic-level settings; Basic clusters provision
   topics with RF=3 internally but **do not expose multi-AZ** — Basic is single-zone.
 - Cluster Linking and DR (canonical default per FSI overlay) are **not available on
-  Basic** — requires Standard or Enterprise/Dedicated. `franz-smoke-01` will be DR-less.
+  Basic** — requires Standard or Enterprise/Dedicated. `smoke-test-01` will be DR-less.
 - mTLS + RBAC: Basic clusters support API keys and OAuth, not mTLS. For any FSI
   production workload, escalate to Enterprise.
 
-A smoke-test cluster named `franz-smoke-01` is consistent with non-production /
+A smoke-test cluster named `smoke-test-01` is consistent with non-production /
 throwaway use — these gaps are expected.
 
 ---
@@ -125,7 +125,7 @@ Active canon defaults relevant to this request (from `base + industry/fsi`):
 | Cluster Linking | Preferred over MM2 for CC-to-CC DR | **Not available on Basic tier** — escalate to Standard+ |
 | Security | mTLS + RBAC for FSI | **Not available on Basic** — API keys / OAuth only |
 | Audit log | Enabled on production | Org-level setting, separate from cluster |
-| Naming convention | `<domain>.<entity>.<event>` for topics | N/A for cluster; cluster name `franz-smoke-01` is operator-chosen |
+| Naming convention | `<domain>.<entity>.<event>` for topics | N/A for cluster; cluster name `smoke-test-01` is operator-chosen |
 
 ---
 

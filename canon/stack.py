@@ -35,7 +35,7 @@ def _layer_roots() -> List[Path]:
     from CFLT_CANON_EXTERNAL_PATH (os-pathsep separated, ~ expanded) — this is how
     client/engagement overlays live in a private repo that never enters the shared
     cflt-ai tree. External roots mirror the canon layer paths, e.g.
-    ~/clients/citi-canon/customer/citi/overrides.yaml.
+    ~/clients/examplebank-canon/customer/examplebank/overrides.yaml.
     """
     roots = [CANON_ROOT]
     for part in os.environ.get("CFLT_CANON_EXTERNAL_PATH", "").split(os.pathsep):

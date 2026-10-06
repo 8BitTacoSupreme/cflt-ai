@@ -2,7 +2,7 @@
 title: Schema Registry Manual Install — Required ACLs and RBAC Role Bindings
 tags: [schema-registry, acls, rbac, security, kafkastore, troubleshooting, mrc]
 sources: []
-related: [concepts/schema-registry-best-practices, patterns/kafka-admin-topic-rbac-tool, concepts/kafka-streams-schema-patterns]
+related: [concepts/schema-registry-best-practices, patterns/yaml-topic-rbac-admin-tool, concepts/kafka-streams-schema-patterns]
 confidence: medium
 last_updated: 2026-09-09
 last_validated: 2026-09-09
@@ -51,7 +51,7 @@ Source: Confluent's "Authorizing Access to the Schemas Topic" documentation
 | `Topic:_schemas` | `Describe`, `DescribeConfigs` | Metadata + config lookups on startup |
 | `Topic:__consumer_offsets` | `Describe` | Implicit dependency of any consumer group |
 | Group (SR's consumer group — see gotcha below) | `Read` | Group-resource ACL for the consumer side of `kafkastore` |
-| Cluster (bare `--cluster` flag, no value) | `Create` | Only needed if SR is expected to auto-create `_schemas`; omit if the topic is pre-created out-of-band (e.g. via an admin tool with explicit `confluent.placement.constraints`, as required on MRC — see [Kafka-Admin Topic/RBAC Tool](../patterns/kafka-admin-topic-rbac-tool.md)) |
+| Cluster (bare `--cluster` flag, no value) | `Create` | Only needed if SR is expected to auto-create `_schemas`; omit if the topic is pre-created out-of-band (e.g. via an admin tool with explicit `confluent.placement.constraints`, as required on MRC — see [YAML-Driven Topic & RBAC Admin Tooling](../patterns/yaml-topic-rbac-admin-tool.md)) |
 
 Example `kafka-acls` invocations:
 
@@ -135,5 +135,5 @@ live docs (`confluent-docs` MCP) before applying.
 ## Related
 
 - [Schema Registry Best Practices](../concepts/schema-registry-best-practices.md) — the operational/governance surface this article's security layer sits underneath.
-- [Kafka-Admin Topic/RBAC Tool](kafka-admin-topic-rbac-tool.md) — the `replication.factor: -1` + explicit `confluent.placement.constraints` mechanism referenced above for pre-creating `_schemas` on MRC.
+- [YAML-Driven Topic & RBAC Admin Tooling](yaml-topic-rbac-admin-tool.md) — the `replication.factor: -1` + explicit `confluent.placement.constraints` mechanism referenced above for pre-creating `_schemas` on MRC.
 - [Kafka Streams Schema Patterns](../concepts/kafka-streams-schema-patterns.md) — client-side SR integration patterns, a different layer from broker-side authorization.

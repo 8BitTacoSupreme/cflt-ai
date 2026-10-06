@@ -25,7 +25,7 @@ Confluent Cloud exposes monitoring data through two independent channels:
 | **Metrics API** | Operational metrics: throughput, consumer lag, partition counts, connector health, Flink stats | HTTPS pull (`/v2/metrics/cloud/export`) | Native Dynatrace CC extension — direct pull, no topic pipeline needed |
 | **Audit Log** | Security events: auth failures, RBAC denials, config changes, API key lifecycle, access transparency | Kafka topic (`confluent-audit-log-events`) on dedicated audit log cluster | No native integration — requires Kafka Connect sink to Dynatrace Log Ingest API |
 
-The Metrics API handles health and performance. The audit log handles security, compliance, and change control. Replacing Splunk with Dynatrace requires addressing both channels independently.
+The Metrics API handles health and performance. The audit log handles security, compliance, and change control. Swapping SIEMs (e.g. Splunk → Dynatrace) requires addressing both channels independently.
 
 ### Audit Log Event Types
 
@@ -115,7 +115,7 @@ transforms.filterType.condition=${topic == 'confluent-audit-log-events'}
 
 ## When to Use
 
-- Migrating from Splunk to Dynatrace (or any SIEM swap) and need to preserve security event alerting
+- Swapping SIEMs (e.g. Splunk → Dynatrace) and need to preserve security event alerting
 - Standing up SOC monitoring for Confluent Cloud in a regulated environment
 - Compliance requires audit trail for authentication, authorization, and infrastructure changes
 - Need to alert on Confluent staff access to customer environments (access-transparency events)

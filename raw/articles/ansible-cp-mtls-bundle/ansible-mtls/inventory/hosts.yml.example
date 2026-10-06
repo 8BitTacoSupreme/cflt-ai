@@ -9,39 +9,39 @@ all:
       # Can be your Ansible controller (use ansible_connection: local)
       # or a dedicated locked-down bastion.
       hosts:
-        ca.fidelity.internal:
-          ansible_host: 10.20.10.5
+        ca.fsifirm.internal:
+          ansible_host: 10.0.0.5
 
     kafka_brokers:
       # Every broker needs: broker_id, broker_ip (for SAN),
       # optional broker_extra_sans (list of "DNS:name" or "IP:addr" strings).
       hosts:
-        broker0.kafka.fidelity.internal:
+        broker0.kafka.fsifirm.internal:
           broker_id: 0
-          broker_ip: 10.20.30.40
+          broker_ip: 10.0.0.40
           broker_extra_sans:
             - DNS:broker0
-            - DNS:kafka-lb.kafka.fidelity.internal   # LB/VIP fronting brokers
-        broker1.kafka.fidelity.internal:
+            - DNS:kafka-lb.kafka.fsifirm.internal   # LB/VIP fronting brokers
+        broker1.kafka.fsifirm.internal:
           broker_id: 1
-          broker_ip: 10.20.30.41
+          broker_ip: 10.0.0.41
           broker_extra_sans:
             - DNS:broker1
-            - DNS:kafka-lb.kafka.fidelity.internal
-        broker2.kafka.fidelity.internal:
+            - DNS:kafka-lb.kafka.fsifirm.internal
+        broker2.kafka.fsifirm.internal:
           broker_id: 2
-          broker_ip: 10.20.30.42
+          broker_ip: 10.0.0.42
           broker_extra_sans:
             - DNS:broker2
-            - DNS:kafka-lb.kafka.fidelity.internal
+            - DNS:kafka-lb.kafka.fsifirm.internal
 
     kafka_clients:
       # Each client gets a cert whose CN becomes the Kafka principal
       # for ACL purposes. Pick stable, meaningful CNs.
       hosts:
-        app1.fidelity.internal:
-          client_cn: fidelity-app1
-        app2.fidelity.internal:
-          client_cn: fidelity-app2
-        connect1.fidelity.internal:
-          client_cn: fidelity-connect-worker-1
+        app1.fsifirm.internal:
+          client_cn: fsifirm-app1
+        app2.fsifirm.internal:
+          client_cn: fsifirm-app2
+        connect1.fsifirm.internal:
+          client_cn: fsifirm-connect-worker-1

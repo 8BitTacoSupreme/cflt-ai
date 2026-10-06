@@ -1,7 +1,7 @@
 # Review: OIC → Confluent Cloud: Acks=All Timeout Triage
 
 **Date:** 2026-04-29
-**Source files:** /Users/jhogan/Downloads/oic_cc_acks_all_timeouts.md
+**Source files:** `oic_cc_acks_all_timeouts.md` (external triage doc)
 **Scope:** Kafka producer configuration, Confluent Cloud cluster settings, cross-cloud networking (OCI→Azure), FSI data integrity, acks=all timeout troubleshooting
 **Claims extracted:** 26
 

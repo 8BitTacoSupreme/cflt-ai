@@ -2,7 +2,7 @@
 title: Confluent Platform TLS Debugging by Component
 tags: [confluent-platform, mtls, tls, ssl, debugging, troubleshooting, schema-registry, connect, control-center, kafka, tcpdump, fsi]
 sources:
-  - /Users/jhogan/Downloads/mTLS-CP-LinuxOne.md
+  - "internal field notes (mTLS on CP / LinuxONE)"
 related:
   - patterns/cp-mtls-self-signed-setup
   - concepts/linuxone-jdk-tls-gotchas

@@ -54,10 +54,10 @@ IBM Z's mechanism for activating reserved IFL capacity only during a declared di
 - Frame 2 (DR): `n` IFLs base sized for DR-tier workloads, plus `m` CBU IFLs (typically `m ≈ n × 0.5` to allow primary-equivalent capacity post-failover).
 - CBU activates within hours of disaster declaration via IBM-provided tooling; the customer pays only for the activated days.
 
-**SOW implications:**
+**Sizing implications:**
 
-- The Practice's SOW math should explicitly call out base IFLs vs CBU IFLs, with CBU activation cost modeled as a per-incident variable rather than a recurring one.
-- For the IBM Practice Partner ask doc, CBU is a real lever: customers can be sold a smaller DR frame on day one with confidence in the elasticity story.
+- Sizing math should explicitly call out base IFLs vs CBU IFLs, with CBU activation cost modeled as a per-incident variable rather than a recurring one.
+- For a partner sizing doc, CBU is a real lever: customers can be sold a smaller DR frame on day one with confidence in the elasticity story.
 
 ### Cross-frame Transport: SMC-R over RoCE Express
 
@@ -144,7 +144,7 @@ A single place where the four LinuxONE pattern docs anchor performance claims. U
 | SMC-D / SMC-R latency advantage | IBM SMC technical references | Cited in [Kafka Tuning § LinuxONE Overlay](../patterns/linuxone-kafka-tuning.md) |
 | CEX8S throughput sustaining mTLS workloads | IBM Crypto Express 8S product brief | Cited in [Validation Suite §5.4 Crypto Express FIPS Throughput](../patterns/linuxone-validation-suite.md) |
 
-> **Action for the Practice:** IBM publishes Emperor 5 fraud-detection benchmark results, HiperSockets latency white papers, and CEX8S throughput data — pin specific URLs and document versions here as they become available rather than relying on directional citations.
+> **Action:** IBM publishes Emperor 5 fraud-detection benchmark results, HiperSockets latency white papers, and CEX8S throughput data — pin specific URLs and document versions here as they become available rather than relying on directional citations.
 
 ## Related
 

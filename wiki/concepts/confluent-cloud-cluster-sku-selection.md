@@ -12,7 +12,7 @@ last_validated: 2026-08-18
 
 ## Summary
 
-Picking a Confluent Cloud (CC) cluster SKU is a workflow problem distinct from understanding what each SKU *is*. `concepts/cc-cluster-tiers.md` owns the tier mental model; this article owns the **decision path** from a request like *"create a Basic Kafka cluster named `franz-smoke-01` in `env-9y7opm` on GCP `us-east1`"* to a validated `confluent kafka cluster create` invocation, plus the routing logic for production work. It captures the ephemeral / smoke-test pattern (Basic on any cloud, deleted within the day) versus the FSI prod path (Enterprise default, Dedicated when CL destination / VPC peering / schema validation is needed). Note: ksqlDB is NOT a Dedicated-only feature — it's on Basic, Standard, and Dedicated; Enterprise is the one tier that lacks it. Cloud and region availability vary slightly per type and shift frequently — confirm against `confluent-docs` MCP before quoting a customer.
+Picking a Confluent Cloud (CC) cluster SKU is a workflow problem distinct from understanding what each SKU *is*. `concepts/cc-cluster-tiers.md` owns the tier mental model; this article owns the **decision path** from a request like *"create a Basic Kafka cluster named `smoke-test-01` in `env-xxxxxx` on GCP `us-east1`"* to a validated `confluent kafka cluster create` invocation, plus the routing logic for production work. It captures the ephemeral / smoke-test pattern (Basic on any cloud, deleted within the day) versus the FSI prod path (Enterprise default, Dedicated when CL destination / VPC peering / schema validation is needed). Note: ksqlDB is NOT a Dedicated-only feature — it's on Basic, Standard, and Dedicated; Enterprise is the one tier that lacks it. Cloud and region availability vary slightly per type and shift frequently — confirm against `confluent-docs` MCP before quoting a customer.
 
 ## Detail
 
@@ -46,14 +46,14 @@ For the originating `/ask` query (Basic on GCP `us-east1`): Basic clusters on GC
 - The Cluster Linking blast radius (CL operates across environments and orgs, but service-account/IAM lives per environment).
 - Billing aggregation.
 
-Set the environment explicitly in every `confluent` CLI invocation. Either `confluent environment use env-9y7opm` once per shell, or pass `--environment env-9y7opm` on every command. The latter is the correct shape for CI/IaC paths — never depend on shell context.
+Set the environment explicitly in every `confluent` CLI invocation. Either `confluent environment use env-xxxxxx` once per shell, or pass `--environment env-xxxxxx` on every command. The latter is the correct shape for CI/IaC paths — never depend on shell context.
 
 **CLI shape.** Canonical Basic-cluster create:
 
 ```bash
 # Smoke-test pattern: Basic, single-zone, GCP us-east1, deleted same-day
-confluent environment use env-9y7opm
-confluent kafka cluster create franz-smoke-01 \
+confluent environment use env-xxxxxx
+confluent kafka cluster create smoke-test-01 \
   --cloud gcp \
   --region us-east1 \
   --type basic \

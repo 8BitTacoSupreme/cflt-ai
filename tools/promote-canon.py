@@ -11,12 +11,12 @@ Scrub rules:
     `TODO: ADR-xxx` placeholder — a promoted override needs its OWN industry/base ADR.
   - Every `--scrub` term (and the client name inferred from --from) is redacted from
     string values, case-insensitive.
-  - Guard patterns like `citi-*-sandbox` generalize to `<owner>-*-sandbox`.
+  - Guard patterns like `examplebank-*-sandbox` generalize to `<owner>-*-sandbox`.
   - Any top-level key left without a source gets a TODO placeholder and the run is
     marked NOT READY until a human fills the ADRs and clears residual hits.
 
 Usage:
-  python tools/promote-canon.py --from customer/citi --to industry/fsi --scrub citi,acct-id
+  python tools/promote-canon.py --from customer/examplebank --to industry/fsi --scrub examplebank,acct-id
   python tools/promote-canon.py --from customer/acme-bank --to industry/fsi --scrub acme --keys producer,latency_tiers
 
 Client silos resolve from CFLT_CANON_EXTERNAL_PATH (see canon/stack.py / CONTRIBUTING.md).
@@ -92,7 +92,7 @@ def _ensure_source(fragment: dict, from_layer: str) -> list[str]:
 def main() -> int:
     ap = argparse.ArgumentParser(description="Promote + scrub a client overlay into a shareable layer.")
     ap.add_argument("--from", dest="from_layer", required=True,
-                    help="Source layer, e.g. customer/citi or engagement/citi-2026")
+                    help="Source layer, e.g. customer/examplebank or engagement/examplebank-2026")
     ap.add_argument("--to", dest="to_layer", required=True,
                     help="Target shareable layer, e.g. industry/fsi or base")
     ap.add_argument("--scrub", default="",

@@ -20,6 +20,35 @@ This is a shared Confluent knowledge base. Claude Code reads this file automatic
 
 ---
 
+## Safety Rule — Never Connect to Client Systems (Always-On, No Exceptions)
+
+**Absolute rule:** Never initiate a network connection, DNS lookup, or command targeting a
+client's real infrastructure — production, DR, staging, or any other live client-owned host
+(e.g. internal domains found in client-provided configs, such as a client's own `*.corp.tld`
+naming). This applies to every tool: `kafka-topics`, `kafka-acls`, `kafka-cluster-links`,
+producer/consumer scripts, `nslookup`/`ping`/`curl`/`nc`, any custom client-supplied
+admin tooling, or MCP servers that could reach external hosts — run directly or in any
+subagent.
+
+**When testing or validating anything for a client** (Replicator configs, Cluster Linking,
+ACL sync, producer/consumer behavior, admin tooling runs, etc.):
+
+- Only test against local or fully sandboxed clusters (e.g. a local Docker Compose /
+  KRaft cluster on `localhost`). Ask the user if a local cluster is already running before
+  standing up a new one.
+- Treat all client-provided hostnames, bootstrap servers, IPs, and credentials as
+  **read-only reference material** — inspect and reason about them in files, never resolve
+  or connect to them, even for a read-only check like DNS resolution.
+- If a task seems to require touching the client's real systems, stop and hand the
+  validated commands/config back to the user to run themselves from their own
+  VPN-connected environment. Do not attempt it here, even read-only, even "just to verify
+  connectivity."
+
+**Why:** Client production/DR systems must never be touched from this tooling, even
+accidentally or "just to check." This is a hard boundary, not a case-by-case judgment call.
+
+---
+
 ## Confluent Canon — Always-On Rules
 
 Whenever a conversation touches Confluent, Apache Kafka, Confluent Cloud, Confluent Platform,

@@ -52,7 +52,7 @@ CC maps Confluent Cloud objects onto Flink concepts automatically — this is th
 
 ### Anticipated blockers & FSI gotchas
 
-Flag these to the client now — several will surface the moment engineers port OSS/CMF habits:
+Flag these to the adopting team now — several will surface the moment engineers port OSS/CMF habits:
 
 | Blocker | Why it bites | Mitigation |
 |---|---|---|
@@ -68,14 +68,14 @@ Flag these to the client now — several will surface the moment engineers port 
 
 ## When to Use
 
-- Standing up a Flink practice on Confluent Cloud where **use cases aren't chosen yet** and the client wants environment + guardrails first.
+- Standing up a Flink practice on Confluent Cloud where **use cases aren't chosen yet** and your organization wants environment + guardrails first.
 - Establishing the CC-vs-CMF decision boundary so teams don't start a DataStream/custom-JAR workload on CC and hit a wall.
 - FSI enablement where the governance, security, and PrivateLink posture must be defined before any regulated data flows through Flink.
 
 ## Caveats
 
-- CC Flink capability moves fast — the unsupported-statement list and default watermark tolerance were validated against `confluent-docs` on 2026-07-30; re-check before committing a customer to a specific capability.
-- This overview is product/environment shaped. Use-case-specific tuning (fraud scoring, reconciliation, CDC) will need its own pages once the client selects workloads.
+- CC Flink capability moves fast — the unsupported-statement list and default watermark tolerance were validated against `confluent-docs` on 2026-07-30; re-check before committing to a specific capability.
+- This overview is product/environment shaped. Use-case-specific tuning (fraud scoring, reconciliation, CDC) will need its own pages once the adopting team selects workloads.
 - The comparison here is CC vs OSS/CMF. CMF ≈ full Apache Flink; the "subset" caveats are about **CC**, not CMF.
 
 ## Related

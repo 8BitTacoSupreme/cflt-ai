@@ -2,7 +2,7 @@
 title: LinuxONE JDK / TLS / s390x Gotchas
 tags: [linuxone, ibm, s390x, ibm-semeru, openj9, fips, pkcs12, pkcs11, cex, tls, ssl, jdk, rocksdb, fsi]
 sources:
-  - /Users/jhogan/Downloads/mTLS-CP-LinuxOne.md
+  - "internal field notes (mTLS on CP / LinuxONE)"
 related:
   - patterns/cp-mtls-self-signed-setup
   - patterns/cp-tls-debugging-by-component
@@ -88,9 +88,9 @@ If they're backing private keys with **Crypto Express cards via PKCS#11**, the w
 - Reference the slot via `NONE` in `ssl.keystore.location`
 - Set `ssl.keystore.type=PKCS11`
 
-The CEX configuration matters: cards run in either **CCA** or **EP11** mode, and which mode the workload talks to is configured at the LPAR / TKE layer. First-pass CP deployments usually shouldn't touch this — get software keys working first, then swap to HSM-backed. If the customer is trying to use HSM-backed keys out of the gate, that's likely where they're stuck.
+The CEX configuration matters: cards run in either **CCA** or **EP11** mode, and which mode the workload talks to is configured at the LPAR / TKE layer. First-pass CP deployments usually shouldn't touch this — get software keys working first, then swap to HSM-backed. If you're trying to use HSM-backed keys out of the gate, that's likely where you're stuck.
 
-> ⚠️ unverified — exact PKCS#11 wiring syntax (the `NONE` placeholder, provider naming) is JDK-vendor and JCA-spec territory rather than Confluent docs. The architectural shape (PKCS#11 provider → CEX card → CCA/EP11 mode) is canonical on IBM Z but the precise property names should be re-checked against the target JDK's PKCS#11 guide before customer-facing use.
+> ⚠️ unverified — exact PKCS#11 wiring syntax (the `NONE` placeholder, provider naming) is JDK-vendor and JCA-spec territory rather than Confluent docs. The architectural shape (PKCS#11 provider → CEX card → CCA/EP11 mode) is canonical on IBM Z but the precise property names should be re-checked against the target JDK's PKCS#11 guide before production use.
 
 #### Time skew
 
@@ -102,7 +102,7 @@ The SAN must match what the client dials. If the client connects by IP but the c
 
 ### Non-SSL s390x Hurdles
 
-Broader rough edges seen tripping up CP deployments on LinuxONE — these aren't TLS-specific but show up on the same engagement, often within the same day as the mTLS work.
+Broader rough edges seen tripping up CP deployments on LinuxONE — these aren't TLS-specific but tend to show up together, often within the same day as the mTLS work.
 
 #### Confluent image / sidecar architecture
 

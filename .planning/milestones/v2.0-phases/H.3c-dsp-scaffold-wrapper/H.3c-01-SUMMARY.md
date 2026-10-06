@@ -102,7 +102,7 @@ All 16 v2.0 requirements satisfied (WIKI-06/07/08, EVAL-01/02/03, INST-01, CAN-O
 
 **1. [Rule 1 - Bug] `scaffold_dir.relative_to(PROJECT_ROOT)` raised ValueError under test isolation**
 - **Found during:** Task 5 (first pytest run)
-- **Issue:** When the test fixture monkeypatches `OUTPUT_ROOT` to a `tmp_path` outside the repo, `Path.relative_to()` raises `ValueError: '... is not in the subpath of /Users/jhogan/cflt-ai'`. Four tests failed because of this.
+- **Issue:** When the test fixture monkeypatches `OUTPUT_ROOT` to a `tmp_path` outside the repo, `Path.relative_to()` raises `ValueError: '... is not in the subpath of <repo-root>'`. Four tests failed because of this.
 - **Fix:** Added `_safe_relative(path)` helper in `tools/scaffold_engine.py` that returns the relative-to-PROJECT_ROOT path when possible, else the absolute path. The provenance field is always populated and machine-readable in both production and test isolation contexts.
 - **Files modified:** `tools/scaffold_engine.py`
 - **Commit:** Same as test commit (`f25773f` — `test(H.3c-01)`)

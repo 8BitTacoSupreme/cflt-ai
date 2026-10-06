@@ -1,7 +1,7 @@
 ---
 title: "Flink in Confluent Cloud: Setup, Private Link, and Event Routing Architecture"
 date: 2026-04-13
-query: "What are the steps to set up and configure Flink in a Confluent Cloud environment? If I have Private Link to the environment, do I need PL directly to Flink? Best practices for 50M events with selective extraction — raw topic → Flink → output topic vs. direct to Flink?"
+query: "Flink setup and configuration in a Confluent Cloud environment; whether an existing Private Link to the environment also covers Flink; event-routing best practice for ~50M events with selective extraction (raw topic → Flink → output topic vs. direct to Flink)"
 wiki_sources: [concepts/flink-checkpointing, concepts/exactly-once-semantics, concepts/fsi-data-streaming-platform, synthesis/adr-index]
 claims_checked: 23
 claims_corrected: 0

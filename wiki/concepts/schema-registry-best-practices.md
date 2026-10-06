@@ -2,9 +2,9 @@
 title: Schema Registry Best Practices
 tags: [schema-registry, avro, protobuf, compatibility, governance, fsi, csfle]
 sources: [outputs/reports/confluent-best-practices-quickstart.md]
-related: [concepts/schema-evolution-strategies, patterns/fsi-governance-automation, patterns/topic-naming, patterns/producer-config-fsi, concepts/fsi-compliance, patterns/schema-registry-shared-types, patterns/schema-registry-manual-install-permissions]
+related: [concepts/schema-evolution-strategies, patterns/schema-linking-cp-to-cc-mtls, patterns/fsi-governance-automation, patterns/topic-naming, patterns/producer-config-fsi, concepts/fsi-compliance, patterns/schema-registry-shared-types, patterns/schema-registry-manual-install-permissions]
 confidence: high
-last_updated: 2026-08-18
+last_updated: 2026-10-01
 last_validated: 2026-08-18
 ---
 
@@ -41,7 +41,7 @@ Schema Registry is the data contract authority for Kafka. This article captures 
 
 ### CC vs CP
 
-- **CC** — managed SR per environment; governance via Stream Governance packages; Schema Linking for DR/migration.
+- **CC** — managed SR per environment; governance via Stream Governance packages; Schema Linking for DR/migration. CC SR does **not** accept mTLS (API key or OAuth only) — for linking from an mTLS-only CP SR see `patterns/schema-linking-cp-to-cc-mtls.md`.
 - **CP** — you run the SR cluster: 3 nodes behind a load balancer, `_schemas` topic with **RF 3 and compaction on** (corruption risk if compaction gets disabled), leader election among nodes, mTLS, RBAC via MDS.
 
 ### Triage
@@ -61,6 +61,7 @@ Schema Registry is the data contract authority for Kafka. This article captures 
 - [Topic Naming Convention](../patterns/topic-naming.md) — `<domain>.<application>.<entity>.<event>`, versioned-topic exception
 - [FSI Producer Configuration](../patterns/producer-config-fsi.md) — `auto.register.schemas=false` enforcement
 - [FSI Compliance](fsi-compliance.md) — schema-change audit trail for regulatory frameworks
-- [Schema Registry Shared-Types Library](../patterns/schema-registry-shared-types.md) — pattern for cross-cutting types (Money, MemberId, UsAddress) under a reserved namespace with pinned schema references
+- [Schema Registry Shared-Types Library](../patterns/schema-registry-shared-types.md) — pattern for cross-cutting types (Money, CustomerId, UsAddress) under a reserved namespace with pinned schema references
 - [Schema Registry Manual Install — Required ACLs and RBAC Role Bindings](../patterns/schema-registry-manual-install-permissions.md) — broker-side authorization layer underneath this article's operational surface; required ACLs/role bindings for the `_schemas` topic on a hand-rolled (non-cp-ansible) install
+- [Schema Linking CP → CC When CP SR Uses mTLS](../patterns/schema-linking-cp-to-cc-mtls.md) — hybrid CP→CC schema migration/link when CP SR is mTLS-only
 - [Top 20 Confluent Gotchas](../synthesis/confluent-gotchas-top-20.md) — #8 (schema IDs not portable), #9 (`auto.register` bypass), #10 (compatibility direction)

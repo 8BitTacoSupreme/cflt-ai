@@ -16,11 +16,11 @@ Upstream PR opened against `goodlabs-studio/fsi-dsp`:
 
 User selected "Open PR via gh now" at the autonomous checkpoint. Sequence:
 
-1. Pushed `feat/manifest-accelerator-type` to `origin` (github-goodlabs SSH alias routes to GoodLabs identity)
-2. Initial `gh pr create` failed with "must be a collaborator" — active `gh` account was `8BitTacoSupreme` (Jeremy's personal), which is not a collaborator on `goodlabs-studio/fsi-dsp`
-3. Switched active `gh` account to `gl-jhogan` (GoodLabs identity)
+1. Pushed `feat/manifest-accelerator-type` to `origin` (SSH alias routes to the GoodLabs GitHub account)
+2. Initial `gh pr create` failed with "must be a collaborator" — active `gh` account was a personal GitHub account, which is not a collaborator on `goodlabs-studio/fsi-dsp`
+3. Switched active `gh` account to the GoodLabs GitHub account
 4. PR created successfully as #3
-5. Restored active `gh` account to `8BitTacoSupreme`
+5. Restored active `gh` account to the personal GitHub account
 
 ## Provenance
 

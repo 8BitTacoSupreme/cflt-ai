@@ -16,19 +16,19 @@ Default" cell from this file with a `path:line` citation, so override rows are t
 ```json
 {
   "scope": "project",
-  "installPath": "/Users/jhogan/.claude/plugins/cache/confluent-agent-skills/streaming-skills-plugin/1.0.0",
+  "installPath": "~/.claude/plugins/cache/confluent-agent-skills/streaming-skills-plugin/1.0.0",
   "version": "1.0.0",
   "installedAt": "2026-05-17T16:29:23.537Z",
   "lastUpdated": "2026-05-17T16:29:23.537Z",
   "gitCommitSha": "91d1871ef8c320be92bca955c8e42492a2778cb4",
-  "projectPath": "/Users/jhogan/cflt-ai"
+  "projectPath": "<repo-root>"
 }
 ```
 
 - `scope: project` ✓
 - `version: 1.0.0` ✓
 - `gitCommitSha: 91d1871ef8c320be92bca955c8e42492a2778cb4` ✓ (matches H.1 `tools/vendor-sources.json` pin)
-- `projectPath: /Users/jhogan/cflt-ai` ✓
+- `projectPath: <repo-root>` ✓
 
 All four SKILL.md files present under
 `~/.claude/plugins/cache/confluent-agent-skills/streaming-skills-plugin/1.0.0/skills/<skill>/SKILL.md`:

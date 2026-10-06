@@ -53,8 +53,8 @@ Every invocation appends an entry to `wiki/activity/YYYY-MM.md` per ACTA-04 sche
 ## Examples
 
 ```
-/dsp:scaffold producer my-payments-producer --profile developer/sandbox --operator jhogan
-/dsp:scaffold producer my-payments-producer --profile engineer --prod --operator jhogan
+/dsp:scaffold producer my-payments-producer --profile developer/sandbox --operator <your-id>
+/dsp:scaffold producer my-payments-producer --profile engineer --prod --operator <your-id>
 /dsp:scaffold producer my-payments-producer --profile read-only      # blocked
 /dsp:scaffold producer my-payments-producer --profile developer/sandbox --prod   # blocked (cross-family)
 ```

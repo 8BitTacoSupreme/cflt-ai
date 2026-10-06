@@ -8,7 +8,7 @@
 # Topic identity (required — assembles the topic name)
 # ---------------------------------------------------------------------------
 variable "domain" {
-  description = "Business domain (e.g., cncb, rtfd, ofac)"
+  description = "Business domain (e.g., payments, rtfd, ofac)"
   type        = string
   validation {
     condition     = can(regex("^[a-z][a-z0-9-]{1,30}$", var.domain))
@@ -47,7 +47,7 @@ variable "entity" {
 # Governance metadata (required)
 # ---------------------------------------------------------------------------
 variable "owner" {
-  description = "Team email responsible for this queue topic (e.g., screening-team@fsi.org)"
+  description = "Team email responsible for this queue topic (e.g., screening-team@example.com)"
   type        = string
   validation {
     condition     = can(regex("^[^@]+@[^@]+\\.[^@]+$", var.owner))

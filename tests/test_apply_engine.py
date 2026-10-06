@@ -173,7 +173,7 @@ class TestActivityLog:
             execution_result="success",
             duration_seconds=3.2,
             gate_results=[],
-            operator="jhogan",
+            operator="test-operator",
         )
 
         # File should now exist — YYYY-MM.md
@@ -203,7 +203,7 @@ class TestActivityLog:
             execution_result="success",
             duration_seconds=1.0,
             gate_results=[],
-            operator="jhogan",
+            operator="test-operator",
         )
 
         content = log_file.read_text()
@@ -259,7 +259,7 @@ class TestIncidentArticle:
         result_path = write_incident_article(
             slug="trade-topic-create",
             artifact_id="module/topic",
-            operator="jhogan",
+            operator="test-operator",
             profile_name="engineer",
             outcome="success",
             canon_hash="abc1234def56789",
@@ -313,7 +313,7 @@ class TestIncidentArticle:
         result_path = write_incident_article(
             slug="schema-update",
             artifact_id="role/cp_schema",
-            operator="jhogan",
+            operator="test-operator",
             profile_name="engineer",
             outcome="success",
             canon_hash="cafe1234cafe5678",
@@ -344,7 +344,7 @@ class TestIncidentArticle:
         result_path = write_incident_article(
             slug="topic-with-gates",
             artifact_id="module/topic",
-            operator="jhogan",
+            operator="test-operator",
             profile_name="engineer",
             outcome="success",
             canon_hash="abcd1234abcd5678",
@@ -375,7 +375,7 @@ class TestIncidentArticle:
         result_path = write_incident_article(
             slug="my-slug",
             artifact_id="module/topic",
-            operator="jhogan",
+            operator="test-operator",
             profile_name="engineer",
             outcome="success",
             canon_hash="aaaa1111aaaa2222",

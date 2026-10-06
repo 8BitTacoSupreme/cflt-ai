@@ -14,7 +14,7 @@ User-supplied scope (from `wiki/_queue.md` "Unverified Claims to Resolve"):
 > [ ] kafka-dr-framework-v3.md §5.3: "Kafka guarantees preserved (no duplicates, no missed messages)" — ORKA-specific; Confluent Gateway DR explicitly warns against this for Streams apps
 
 Same posture as the §5.1 resolution (`wiki-validation-2026-05-15.md`):
-`kafka-dr-framework-v3.md` is a customer-side framework document, not a wiki
+`kafka-dr-framework-v3.md` is an external DR framework document, not a wiki
 article. No wiki article currently authors this claim, so the outcome is a
 **queue-resolution decision** with guidance for the queued
 `dr-application-routing.md` stub — not a wiki body edit.
@@ -125,8 +125,8 @@ mechanism claims. The candidate ways ORKA could close the gap:
    Confluent warning.
 
 Verifying which of (1)–(3) ORKA actually implements requires the same
-disclosure path as the §5.1 resolution: GoodLabs technical docs (NDA if
-necessary), engineering walkthrough, or empirical capture. Public MCP
+disclosure path as the §5.1 resolution: vendor technical docs, an
+engineering walkthrough, or empirical capture. Public MCP
 scope cannot resolve.
 
 ## Resolution
@@ -141,8 +141,8 @@ disclosure."**
   unplanned `failover` retains the standard async-DR risk window.
 - Sub-claim B: **refuted as a general claim** for stateful apps. Confluent's
   own client-switchover guidance is the authoritative counter-cite.
-- Sub-claim C: **out of public-MCP scope** — flag for GoodLabs follow-up if
-  ORKA enters serious procurement consideration. Do not author the
+- Sub-claim C: **out of public-MCP scope** — requires vendor
+  confirmation. Do not author the
   guarantee-preservation claim into the wiki without either (a) a vendor
   citation, or (b) explicit scoping to stateless workloads under planned
   failover.

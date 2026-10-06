@@ -122,7 +122,7 @@ Aggressive validation, tuning, and AI-inference integration plan for **Confluent
 
 ### 4. Telum II Sub-Millisecond Anomaly Detection
 
-This is the differentiator — and the answer to the user's bonus.
+This is the differentiator.
 
 #### 4.1 Architecture
 

@@ -15,11 +15,11 @@
 #   2. CP FIPS mode      — BC-FIPS provider + BCFKS keystores. Pure Java, so it is
 #      configuration and certification sequencing, not architecture. We build the
 #      keystore pipeline in from day one so flipping `fipsmode: true` is a values
-#      change, not a re-architecture. Confirm CP-on-Z status with the IBM/Confluent
-#      partner team at kickoff and record it in the BOM.
+#      change, not a re-architecture. Confirm CP-on-Z status with IBM/Confluent
+#      before deployment and record it in the BOM.
 #
 # The AI inference path is OUTSIDE the FIPS boundary by construction: zDLC/zDNN/
-# NNPA perform no cryptographic functions. Say so in the client doc.
+# NNPA perform no cryptographic functions. Document this in the security review.
 #
 #   ansible-playbook -i inventory.ini 02-fips-mode.yml
 # =============================================================================
@@ -51,7 +51,7 @@
         msg: >-
           fips_enabled={{ fips_enabled.content | b64decode | trim }} but fips=1 is absent from
           /proc/cmdline. The boot chain is not the validated one. Reinstall with fips=1;
-          do not paper over this for an FSI engagement.
+          do not paper over this for an FSI deployment.
       when:
         - (fips_enabled.content | b64decode | trim) == "1"
         - fips_cmdline.rc != 0
@@ -133,7 +133,7 @@
               "confluent_platform": {
                 "component": "CP FIPS mode (BC-FIPS provider, BCFKS keystores)",
                 "basis": "configuration; pure-Java provider",
-                "note": "Confirm CP-on-Z FIPS status with the IBM/Confluent partner team; record here.",
+                "note": "Confirm CP-on-Z FIPS status with IBM/Confluent before deployment; record here.",
                 "status": "{{ cp_fips_status | default('PENDING_PARTNER_CONFIRMATION') }}"
               },
               "jvm": {

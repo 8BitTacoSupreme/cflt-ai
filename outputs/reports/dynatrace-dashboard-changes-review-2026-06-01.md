@@ -1,7 +1,7 @@
-# Review: Dynatrace Confluent Cloud Dashboard — Changes for DT Team
+# Review: Dynatrace Confluent Cloud Dashboard — Dynatrace dashboard changes
 
 **Date:** 2026-06-01
-**Source files:** /Users/jhogan/Downloads/dynatrace_dashboard_changes_handoff.md
+**Source files:** `dynatrace_dashboard_changes_handoff.md` (external handoff doc)
 **Scope:** Confluent Cloud Metrics API field names + aggregation semantics, Dynatrace (Classic Metrics + DQL/Grail) dashboard construction, Davis anomaly detection vs static thresholds, per-CKU capacity limits, consumer-lag and Schema Registry observability.
 **Claims extracted:** 24
 
@@ -36,7 +36,7 @@ The handoff is **operationally sound and mostly accurate** — the aggregation-p
 | dynatrace-8 | `received_records` = records produced; `sent_records` = records broker *sent* to consumers (not consumer-acked) | observability-metrics-mapping | — | — | — | Confirmed |
 | dynatrace-9 | Second "Request bytes by principal" tile is actually `response_bytes`; pairs with `request_bytes` for showback | — | — | — | — | Unverifiable |
 
-**Corrections:** none blocking. #9 is a local dashboard-config assertion (which tile holds which metric) — not externally verifiable from canon; trust the DT team's tile inspection. The `request_bytes` (produce) / `response_bytes` (consume) showback pairing is conceptually correct.
+**Corrections:** none blocking. #9 is a local dashboard-config assertion (which tile holds which metric) — not externally verifiable from canon; trust the dashboard owner's tile inspection. The `request_bytes` (produce) / `response_bytes` (consume) showback pairing is conceptually correct.
 
 ### C. Alerts — thresholds and modes
 

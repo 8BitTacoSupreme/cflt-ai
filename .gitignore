@@ -34,3 +34,6 @@ canon/engagement/*
 !canon/customer/acme-bank/**
 !canon/engagement/README.md
 !canon/engagement/.gitkeep
+
+# Local headroom proxy state (PIDs/ports) — machine-specific
+.claude/.headroom_wrap_*

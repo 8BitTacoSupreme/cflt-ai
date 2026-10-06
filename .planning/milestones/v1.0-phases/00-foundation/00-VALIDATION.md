@@ -41,7 +41,7 @@ created: 2026-04-28
 | 0-01-01 | 01 | 1 | HYG-01 | functional | `python tools/wiki-stats.py` | ❌ W0 | ⬜ pending |
 | 0-01-02 | 01 | 1 | HYG-02 | functional | `python tools/wiki-lint.py` | ❌ W0 | ⬜ pending |
 | 0-01-03 | 01 | 1 | HYG-03 | functional | `grep -r '\\.\\.\\.' .claude/skills/` | ❌ W0 | ⬜ pending |
-| 0-02-01 | 02 | 1 | HYG-04 | functional | `cd /Users/jhogan/cflt-ai && flox activate -- echo ok` | ✅ | ⬜ pending |
+| 0-02-01 | 02 | 1 | HYG-04 | functional | `cd <repo-root> && flox activate -- echo ok` | ✅ | ⬜ pending |
 | 0-02-02 | 02 | 1 | HYG-05 | functional | `cd raw/repos/fsi-dsp && flox activate -- echo ok` | ❌ W0 | ⬜ pending |
 | 0-03-01 | 03 | 2 | CNTR-01 | structural | `test -f raw/repos/fsi-dsp/MANIFEST.yaml` | ❌ W0 | ⬜ pending |
 | 0-03-02 | 03 | 2 | CNTR-02 | structural | `python -c "import yaml; yaml.safe_load(open('raw/repos/fsi-dsp/MANIFEST.yaml'))"` | ❌ W0 | ⬜ pending |

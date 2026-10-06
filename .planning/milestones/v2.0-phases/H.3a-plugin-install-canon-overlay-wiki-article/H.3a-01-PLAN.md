@@ -25,7 +25,7 @@ must_haves:
     - "`wiki/_graph.md` contains at least 2 inbound edges pointing to `patterns/fsi-canon-overlay-for-confluent-skills.md` (target: 2–3)"
     - "`CLAUDE.md` (project root) gains a new `## Upstream Confluent Skills (streaming-skills-plugin)` section positioned after `## Confluent Canon — Always-On Rules` (line 23) and before `## MCP Tool Availability` (current line 111). New section is ~5 lines: declarative tone, lists the four upstream skills, directs Claude to read the overlay article on activation"
     - "`tools/wiki-lint.py` runs clean on the new article (no orphan, no decay, no broken-link findings) — drift findings from H.1's `check_vendor_drift` remain non-fatal per H.1-03 D-09"
-    - "No changes to `~/.claude/CLAUDE.md` (jhogan's global file) per H.3a CONTEXT.md D-09"
+    - "No changes to `~/.claude/CLAUDE.md` (the user's global file) per H.3a CONTEXT.md D-09"
     - "No `tools/`, no `tests/`, no `.github/workflows/` changes in this plan — H.3b territory"
   artifacts:
     - path: "wiki/patterns/fsi-canon-overlay-for-confluent-skills.md"
@@ -322,7 +322,7 @@ Vendor pin: `tools/vendor-sources.json` → `confluent-agent-skills` @ commit `9
     - Do NOT modify `### 1. Use the Confluent Docs MCP Server` through `### 5. Competitive Context (Active as of 2026)`.
     - Do NOT modify `## MCP Tool Availability` table contents.
     - Do NOT modify `## Working Style`.
-    - Do NOT touch `~/.claude/CLAUDE.md` (jhogan's user-global file).
+    - Do NOT touch `~/.claude/CLAUDE.md` (the user's user-global file).
 
     After insertion, the CLAUDE.md section sequence reads:
     1. `# cflt-ai — Claude Code Instructions`

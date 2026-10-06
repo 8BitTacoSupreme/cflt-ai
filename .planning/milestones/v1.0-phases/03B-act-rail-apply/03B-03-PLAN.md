@@ -174,7 +174,7 @@ expected_incident: true
     **Distribution:** 5 positive (3 sonnet, 2 haiku) + 5 negative-space (1 sonnet, 4 haiku) = 10 total. All negative-space cases include 'resource "confluent_' in forbidden_claims per established pattern.
   </action>
   <verify>
-    <automated>cd /Users/jhogan/cflt-ai && python3 -c "
+    <automated>cd <repo-root> && python3 -c "
 from pathlib import Path
 cases = sorted(Path('tests/golden/act/cases').glob('apply-*.md'))
 print(f'Apply cases found: {len(cases)}')
@@ -260,7 +260,7 @@ print('ALL CHECKS PASSED')
     - The "admin" profile in apply-unknown-profile-031.md is allowed via the negative_space guard in test_apply_case_has_valid_profile
   </action>
   <verify>
-    <automated>cd /Users/jhogan/cflt-ai && python3 -m pytest tests/golden/act/test_golden_act.py -v --tb=short -q</automated>
+    <automated>cd <repo-root> && python3 -m pytest tests/golden/act/test_golden_act.py -v --tb=short -q</automated>
   </verify>
   <acceptance_criteria>
     - tests/golden/act/test_golden_act.py contains "class TestGoldenApplyHarnessStructure"

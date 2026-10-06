@@ -1,10 +1,10 @@
 # DR Recommendation: CFK/OpenShift with RPO < 30 Seconds
 
 **Date:** 2026-04-11 (revised after MCP validation)
-**Author:** Jeremy Hogan
-**Context:** Client on CFK/OpenShift needs RPO under 30 seconds but wants to avoid the infrastructure cost of a full MRC deployment.
+**Author:** GoodLabs
+**Context:** Scenario: a CFK/OpenShift deployment that needs RPO under 30 seconds but wants to avoid the infrastructure cost of a full MRC deployment.
 
-> **Licensing clarification:** Both Cluster Linking and MRC are included in the Confluent Enterprise License at no additional cost. The client's constraint is infrastructure cost (MRC requires 5x replication across 3 DCs with synchronous write latency), not licensing.
+> **Licensing clarification:** Both Cluster Linking and MRC are included in the Confluent Enterprise License at no additional cost. The deployment's constraint is infrastructure cost (MRC requires 5x replication across 3 DCs with synchronous write latency), not licensing.
 
 ---
 
@@ -59,7 +59,7 @@ CL replication lag is typically single-digit seconds (broker-level, no Connect o
 
 ## Fallback: Tuned MirrorMaker 2
 
-Use this path only if the client's CFK/CP version is below the CL bidirectional threshold (CFK < 3.2.0 or CP < 7.5).
+Use this path only if the deployment's CFK/CP version is below the CL bidirectional threshold (CFK < 3.2.0 or CP < 7.5).
 
 ### MM2 Tuning for Sub-30s Replication Lag
 
@@ -115,7 +115,7 @@ MM2 does not expose per-topic lag via REST API. Three approaches for production 
 
 ## What About MRC?
 
-The client already has MRC licensed (it's included in Enterprise). The real cost is infrastructure:
+The organization already has MRC licensed (it's included in Enterprise). The real cost is infrastructure:
 
 | Cost Factor | Impact |
 |---|---|
@@ -124,7 +124,7 @@ The client already has MRC licensed (it's included in Enterprise). The real cost
 | Synchronous cross-DC writes | Produce latency increases by network RTT between DCs |
 | Operational complexity | Single stretched cluster vs. two independent clusters |
 
-**When to push MRC:** If the client's compliance team requires provable RPO=0 (not "< 30s with monitoring"), MRC is the only path. Frame the infrastructure cost against the regulatory risk of a sub-30s SLA that can theoretically be breached.
+**When to push MRC:** If the organization's compliance team requires provable RPO=0 (not "< 30s with monitoring"), MRC is the only path. Frame the infrastructure cost against the regulatory risk of a sub-30s SLA that can theoretically be breached.
 
 ---
 
@@ -153,7 +153,7 @@ Is regulatory-hard RPO=0 required?
 
 ---
 
-## RPO Guarantee Framing for the Client
+## RPO Guarantee Framing for Stakeholders
 
 - **Steady state (CL or tuned MM2):** Replication lag 1-5 seconds. Sub-30s met >99.9% of the time.
 - **Degraded state:** Network congestion or broker saturation can spike lag. Monitoring + alerting catches this within the 25s alert window.

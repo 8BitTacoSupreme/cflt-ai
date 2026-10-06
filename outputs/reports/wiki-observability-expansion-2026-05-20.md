@@ -33,7 +33,7 @@ Same matrix as the 2026-05-19 audit, updated cells in **bold**.
 | Flink | ✓ flink-runtime-models | ~ Mentioned (CMF) | ~ LinuxONE article |
 | ksqlDB | **✓ ksqldb-observability** (was ✗) | **✓ ksqldb-observability** (was ✗) | **✓ ksqldb-observability + cfk-baseline** (was ✗) |
 | Cluster Linking | ✓ DR pattern + metrics-mapping raw | **✓ cluster-linking-observability** (was ~) | **✓ cluster-linking-observability + cfk-baseline** (was ~) |
-| REST Proxy | ✗ | ✗ | ✗ (out of scope; no FSI engagement frequency) |
+| REST Proxy | ✗ | ✗ | ✗ (out of scope; low FSI demand) |
 | Client (KIP-714) | ✗ | ✗ | ✗ (out of scope; CP 7.7+ required) |
 | Security/Audit logs | ✓ Audit Log SIEM Integration | ✗ | ✗ |
 
@@ -91,7 +91,7 @@ Four claims from the source material were corrected during ingest:
 
 - **No `/wiki:validate` run yet.** Most articles set `confidence: medium`. A follow-up `/wiki:validate --scope observability` is recommended within 90 days to promote articles whose unverified markers resolve cleanly.
 - **9 inline `⚠️ unverified` markers** distributed across the 6 articles (per article 1's 3 markers, article 2's 2, article 3's 1, article 5's 2, article 6's 1). All represent claims sourced from authoritative material that the 2026-05-20 MCP fetch did not surface cleanly — verify against live tenant or current Metrics Reference before high-stakes production use.
-- **REST Proxy and KIP-714 client telemetry remain ✗** in the coverage matrix. Deferred to backlog per plan; low FSI engagement frequency.
+- **REST Proxy and KIP-714 client telemetry remain ✗** in the coverage matrix. Deferred to backlog per plan; low FSI demand.
 - **Per-provider query syntax** in the spine is sourced from the fsi-dsp repo (authoritative for that platform's deployment) but not re-validated against current Grafana/Dynatrace/Splunk/New Relic/Datadog/Instana docs. The DQL Connect docs revision (root-level `Connect_Dynatrace_Monitoring_Guide.md`) showed this kind of staleness can bite.
 - **Lint clean** but the pre-existing vendor-source DRIFT on `wiki/patterns/fsi-canon-overlay-for-confluent-skills.md` (source=1.0.0… vs pin=91d1871e…) is unrelated to this expansion and remains for a future cleanup pass.
 

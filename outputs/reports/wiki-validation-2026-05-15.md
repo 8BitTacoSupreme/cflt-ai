@@ -15,8 +15,8 @@ User-supplied scope (from `wiki/_queue.md` "Unverified Claims to Resolve"):
 
 This is a queued claim from a **prior evaluation** of an external document
 (`outputs/reports/kafka-dr-framework-v3-evaluation-2026-04-20.md`). The
-`kafka-dr-framework-v3.md` is not a wiki article — it was a customer-side DR
-framework doc evaluated on 2026-04-20. No wiki article currently restates
+`kafka-dr-framework-v3.md` is not a wiki article — it was an external DR
+framework document evaluated on 2026-04-20. No wiki article currently restates
 this claim, so the validation outcome is a **queue-resolution decision**, not
 a wiki body edit.
 
@@ -93,7 +93,7 @@ Verifying that ORKA *specifically* uses empty fetches (vs. e.g. a controlled
 synthetic `NOT_LEADER_OR_FOLLOWER` error to trigger metadata refresh) requires
 **one of**:
 
-1. GoodLabs vendor technical documentation (under NDA if necessary).
+1. Vendor technical documentation.
 2. A `tcpdump` / wireshark Kafka-protocol capture against an ORKA-fronted
    cluster during failover.
 3. A walkthrough from GoodLabs engineering.
@@ -108,9 +108,9 @@ disclosure."** Recommendation:
 
 - Sub-claims A/B/C: **confirmed** via Kroxylicious upstream (FetchResponseFilter
   interface), Kafka protocol (heartbeat decoupling).
-- Sub-claim D: **out of public-MCP scope** — flag for GoodLabs follow-up if
-  ORKA enters serious procurement consideration; do not author into the wiki
-  as a confirmed fact until vendor confirms.
+- Sub-claim D: **out of public-MCP scope** — requires vendor
+  confirmation; do not author into the wiki as a confirmed fact until the
+  vendor confirms.
 
 ## Recommendation for the wiki
 

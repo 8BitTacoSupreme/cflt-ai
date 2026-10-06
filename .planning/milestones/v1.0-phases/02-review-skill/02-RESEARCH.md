@@ -104,7 +104,7 @@ The main design risk is claim extraction reproducibility (REVW-01). Determinism 
 | python-docx | pandoc (CLI tool) | pandoc not confirmed installed; python-docx is pure Python with no external binary dependency |
 | YAML intermediate | JSON intermediate | Both work; YAML chosen per CONTEXT.md decision; more human-readable for golden cases |
 
-**Installation:** No new packages required. python-docx 1.2.0 is already installed at `/Users/jhogan/Library/Python/3.9/lib/python/site-packages`.
+**Installation:** No new packages required. python-docx 1.2.0 is already installed at `the user-local Python 3.9 site-packages`.
 
 **Version verification:** Confirmed `python-docx 1.2.0` via `pip3 show python-docx`. Python 3.9.6 confirmed available.
 
@@ -210,7 +210,7 @@ $ARGUMENTS
 
 Parse `$ARGUMENTS`:
 - Extract `--output` value if present: `md` (default) | `docx` | `both`
-- Extract `--overlay` value if present: customer overlay name (e.g., `citi`, `fsi`)
+- Extract `--overlay` value if present: customer overlay name (e.g., `acme-bank`, `fsi`)
 - Remaining non-flag tokens after flag extraction are treated as file paths to review
 - If any path does not exist, stop and report: `Error: file not found: <path>`
 - If no paths provided and no pasted content, stop and report: `Error: no input specified`

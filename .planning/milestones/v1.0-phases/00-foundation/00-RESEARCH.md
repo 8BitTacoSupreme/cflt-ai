@@ -514,7 +514,7 @@ Never edit entries retroactively. Archive (do not delete) files older than 12 mo
    - Recommendation: Use `python311.pkg-path = "python311"` explicitly to match CI. Add `pytest.pkg-path = "python311Packages.pytest"` if pytest is needed in the Flox environment.
 
 4. **Fsi-dsp submodule write access for MANIFEST.yaml**
-   - What we know: `raw/repos/fsi-dsp` is a git submodule pointing to `git@github-goodlabs:goodlabs-studio/fsi-dsp.git`
+   - What we know: `raw/repos/fsi-dsp` is a git submodule pointing to `git@github.com:goodlabs-studio/fsi-dsp.git`
    - What's unclear: Whether the planner should assume write access to the fsi-dsp repo, or only to cflt-ai
    - Recommendation: MANIFEST.yaml and ADR-009 must be created inside `raw/repos/fsi-dsp/` and committed to the fsi-dsp repo. Plans should include a separate commit step for fsi-dsp. The cflt-ai CI then pins the submodule to the new commit containing MANIFEST.yaml.
 
@@ -603,7 +603,7 @@ These directives from `CLAUDE.md` apply to all work in this phase:
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct codebase inspection — all findings from reading actual files in `/Users/jhogan/cflt-ai/` and `/Users/jhogan/cflt-ai/raw/repos/fsi-dsp/`
+- Direct codebase inspection — all findings from reading actual files in `<repo-root>/` and `<repo-root>/raw/repos/fsi-dsp/`
 - `tools/wiki-stats.py` — SyntaxError on line 1 confirmed by running `python3 tools/wiki-stats.py`
 - `tools/wiki-lint.py` — lint output confirmed by running `python3 tools/wiki-lint.py --full`
 - `.flox/env/manifest.toml` — Flox manifest confirmed present; `flox activate` runs successfully

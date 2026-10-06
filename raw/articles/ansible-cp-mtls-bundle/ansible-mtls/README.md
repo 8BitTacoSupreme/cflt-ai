@@ -45,7 +45,7 @@ ansible-mtls/
 
 ## Assumptions (adjust as needed)
 
-Because I couldn't see the existing `fsi-dsp/ansible` layout, these are guesses. If you have existing conventions in the repo for any of these, override them before running.
+These are defaults; adjust paths to match your layout. If you have existing conventions in the repo for any of these, override them before running.
 
 | Assumption | Where it lives | Change it if… |
 |---|---|---|
@@ -118,10 +118,10 @@ If you already have Kafka provisioning roles in `fsi-dsp/ansible`, the likely in
 
 ## Known limitations
 
-- **No HSM / PKCS#11 support.** If Fidelity wants CEX cards backing broker keys, this playbook is software-keys only. PKCS#11 requires a separate path (custom `java.security` + `ssl.keystore.type=PKCS11`) that's outside Ansible's normal cert lifecycle.
+- **No HSM / PKCS#11 support.** If CEX cards must back broker keys, this playbook is software-keys only. PKCS#11 requires a separate path (custom `java.security` + `ssl.keystore.type=PKCS11`) that's outside Ansible's normal cert lifecycle.
 - **CP components beyond brokers** (Schema Registry, Connect, ksqlDB, Control Center) aren't in scope here. The cert generation pattern is identical — add groups to inventory and parameterize the role.
 - **Cluster rollout strategy** for `04-configure-mtls.yml` is `serial: 1` with a restart handler. For large clusters, adjust `serial` and add a health check between brokers.
-- **No automatic cert expiry monitoring.** Wire Prometheus/Alertmanager (or whatever Fidelity uses) to scrape cert expiry separately.
+- **No automatic cert expiry monitoring.** Wire Prometheus/Alertmanager (or whatever monitoring stack you use) to scrape cert expiry separately.
 
 ## When it fails
 

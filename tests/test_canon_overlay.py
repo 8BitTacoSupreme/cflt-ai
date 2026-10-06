@@ -165,25 +165,25 @@ class TestExternalCanonPath:
         self, project_root, tmp_path, monkeypatch
     ):
         stack = self._import(project_root)
-        client = tmp_path / "customer" / "citi"
+        client = tmp_path / "customer" / "examplebank"
         client.mkdir(parents=True)
         (client / "overrides.yaml").write_text(
             "producer:\n"
             '  compression_type: "zstd"\n'
-            '  override_source: "customer/citi/adr-001"\n'
+            '  override_source: "customer/examplebank/adr-001"\n'
             "cluster_linking:\n"
-            '  preferred_over: "citi-override"\n'
+            '  preferred_over: "examplebank-override"\n'
         )
         monkeypatch.setenv("CFLT_CANON_EXTERNAL_PATH", str(tmp_path))
 
-        cfg, h = stack.resolve_stack(customer="citi")
+        cfg, h = stack.resolve_stack(customer="examplebank")
         # Client override wins over base (lz4) and over industry/fsi.
         assert cfg["producer"]["compression_type"] == "zstd"
-        assert cfg["cluster_linking"]["preferred_over"] == "citi-override"
+        assert cfg["cluster_linking"]["preferred_over"] == "examplebank-override"
         # Non-overridden base keys survive.
         assert cfg["producer"]["acks"] == "all"
         # The active layer list reflects the external client layer.
-        assert "customer/citi" in stack.active_layers(customer="citi")
+        assert "customer/examplebank" in stack.active_layers(customer="examplebank")
         # Hash differs from the unselected stack.
         _, base_hash = stack.resolve_stack()
         assert h != base_hash
@@ -193,14 +193,14 @@ class TestExternalCanonPath:
     ):
         """Setting the path but not selecting the customer keeps client data out."""
         stack = self._import(project_root)
-        client = tmp_path / "customer" / "citi"
+        client = tmp_path / "customer" / "examplebank"
         client.mkdir(parents=True)
         (client / "overrides.yaml").write_text('producer:\n  compression_type: "zstd"\n')
         monkeypatch.setenv("CFLT_CANON_EXTERNAL_PATH", str(tmp_path))
 
         cfg, _ = stack.resolve_stack()  # no customer= selection
-        assert cfg["producer"]["compression_type"] == "lz4"  # base, not citi
-        assert "customer/citi" not in stack.active_layers()
+        assert cfg["producer"]["compression_type"] == "lz4"  # base, not examplebank
+        assert "customer/examplebank" not in stack.active_layers()
 
 
 class TestIndustryRouting:

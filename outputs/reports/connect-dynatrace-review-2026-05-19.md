@@ -1,13 +1,13 @@
 # Review: Connect Dynatrace Monitoring (DQL Dashboard + Migration Guide)
 
 **Date:** 2026-05-19
-**Source files:** /Users/jhogan/cflt-ai/Connect_DQL_Dashboard_Config.md, /Users/jhogan/cflt-ai/Connect_Dynatrace_Monitoring_Guide.md
+**Source files:** `Connect_DQL_Dashboard_Config.md`, `Connect_Dynatrace_Monitoring_Guide.md`
 **Scope:** Confluent Kafka Connect (self-managed, distributed), Dynatrace observability (DQL, OneAgent JMX, dashboards, alerting), Splunk → Dynatrace migration, Connect DLQ monitoring, Terraform-based IaC for Dynatrace.
 **Claims extracted:** 32 (dql: 15, guide: 17)
 
 ## Summary
 
-Both documents are **directionally useful as design sketches** for a Connect observability rollout, but they share a **load-bearing technical error**: the "DQL" examples are not Dynatrace Grail DQL — they use a colon-prefixed selector syntax (`:fields()`, `:splitBy()`, `:filter()`, `:max`, `:rate()`) that resembles the older **Dynatrace Metric Selector v2** language, not the Grail query language Dynatrace markets as "DQL" today. Every dashboard query, alert expression, and migration example in both files will need to be rewritten before it executes. Secondary issues: several Connect JMX MBean attribute names are wrong (`connector-errors-total`, `connector-status`, `connector-state`, `put_rate` placement, `__dlq-{connector_name}` consumer-group convention), the JMX exposure configuration **directly violates FSI security canon** (`jmxremote.authenticate=false`, `jmxremote.ssl=false`), and the implicit DLQ monitoring model assumes a consumer group that Connect does not create automatically. Recommend treating both docs as architecture-level scaffolding only and rebuilding the query/alert layer against real DQL + actual Connect 3.x/4.x MBean names before any GoodLabs hand-off.
+Both documents are **directionally useful as design sketches** for a Connect observability rollout, but they share a **load-bearing technical error**: the "DQL" examples are not Dynatrace Grail DQL — they use a colon-prefixed selector syntax (`:fields()`, `:splitBy()`, `:filter()`, `:max`, `:rate()`) that resembles the older **Dynatrace Metric Selector v2** language, not the Grail query language Dynatrace markets as "DQL" today. Every dashboard query, alert expression, and migration example in both files will need to be rewritten before it executes. Secondary issues: several Connect JMX MBean attribute names are wrong (`connector-errors-total`, `connector-status`, `connector-state`, `put_rate` placement, `__dlq-{connector_name}` consumer-group convention), the JMX exposure configuration **directly violates FSI security canon** (`jmxremote.authenticate=false`, `jmxremote.ssl=false`), and the implicit DLQ monitoring model assumes a consumer group that Connect does not create automatically. Recommend treating both docs as architecture-level scaffolding only and rebuilding the query/alert layer against real DQL + actual Connect 3.x/4.x MBean names before hand-off.
 
 ## Claim Extraction (YAML)
 
@@ -148,7 +148,7 @@ claims:
     source_file: Connect_Dynatrace_Monitoring_Guide.md
     source_section: "Part 6 Deployment"
     category: architecture_choice
-    text: "On FSI/GoodLabs engagements deploy Connect workers as Kubernetes StatefulSet and OneAgent as DaemonSet."
+    text: "On FSI deployments deploy Connect workers as Kubernetes StatefulSet and OneAgent as DaemonSet."
   - id: guide-13
     source_file: Connect_Dynatrace_Monitoring_Guide.md
     source_section: "Part 8 Transitions from Cloud Metrics"
@@ -290,7 +290,7 @@ claims:
 |---|---------|------------|-----------|----------|
 | 1 | "DQL" in the dashboard examples is real Dynatrace Grail DQL. | Customer can paste the queries into Dynatrace and they'll execute. | The syntax used (`:fields()`, `:splitBy()`, `:filter()`, `:rate()`) is the **v2 metric selector** language, not DQL. Real Grail DQL is pipe-based (`timeseries val=avg(metric) | filter ... | summarize ...`). Every query will need to be rewritten. The migration table claiming "Splunk → DQL" mapping is itself wrong — it maps Splunk SPL to the selector language. | **Critical** |
 | 2 | OneAgent can natively scrape JMX string attributes (`status=RUNNING`) and surface them as alert-queryable metrics. | "String states are fine, alert rules use string matching." | OneAgent's JMX extension treats JMX attributes as numeric metrics by default. String-valued attributes (Connect's `status`) require an extension that maps each string to a numeric enum (e.g., `running=1, failed=2`) or ingestion as log/event data. The doc skips this — without the mapping layer the "Failed Tasks count" tile cannot be built as described. | **Critical** |
-| 3 | JMX can be exposed `jmxremote.authenticate=false jmxremote.ssl=false` in production. | These flags are acceptable defaults; "proper SSL for prod" is a checklist item, not a blocker. | This directly violates the FSI security canon (mTLS + RBAC, never plaintext auth). For GoodLabs FSI engagements this configuration would fail any pre-prod security review and likely fail an SR / compliance gate. JMX exposes process-level controls (heap dump, runtime config); a plaintext JMX port on a FSI host is a P0 security finding. | **Critical** (FSI overlay) |
+| 3 | JMX can be exposed `jmxremote.authenticate=false jmxremote.ssl=false` in production. | These flags are acceptable defaults; "proper SSL for prod" is a checklist item, not a blocker. | This directly violates the FSI security canon (mTLS + RBAC, never plaintext auth). For FSI deployments this configuration would fail any pre-prod security review and likely fail an SR / compliance gate. JMX exposes process-level controls (heap dump, runtime config); a plaintext JMX port on a FSI host is a P0 security finding. | **Critical** (FSI overlay) |
 | 4 | The DLQ has, or should have, an auto-created consumer group named `__dlq-{connector_name}` that we can monitor via `consumer_lag_offsets`. | Querying consumer lag gives us "DLQ growing" signal. | Connect does not create a DLQ consumer group. The DLQ is a producer-only target. "Lag" of zero on a non-existent group is meaningless. Real DLQ growth monitoring uses log-end-offset rate-of-change on the DLQ topic, or instruments a replay consumer separately. | **Critical** |
 | 5 | The full Cloud "broker health" mental model maps to self-managed Connect. | Translation tables ("Cloud `cluster_load_percent` → self-managed X") capture the relevant differences. | Connect's health model is fundamentally state-machine + REST-API-shaped, not capacity-shaped. The doc acknowledges this in Part 5 ("Connect requires its own dashboard") but the Part 1.2 / Part 8 mapping tables undermine that by listing "Cloud metric → Connect metric" rows for metrics that don't map. Make the rows say "Cloud: capacity model. Connect: state model." | Moderate |
 
@@ -305,7 +305,7 @@ claims:
 | Cluster Linking / DR | N/A — not addressed | DR dashboard mentioned only as out-of-scope (Dashboard 3, unchanged). |
 | **Security (mTLS, RBAC, audit log)** | **Violation** | JMX exposure `authenticate=false ssl=false` (guide §1.1, §6) directly contradicts FSI canon. Must be hardened or explicitly scoped to dev. The Vault-for-secrets pattern (dql-14) is canon-compliant. |
 | **Audit log retention** | **Compliant** | Keeping Kafka audit events in Splunk (guide §A.5) aligns with FSI long-retention compliance overlay. |
-| **FSI vendor-backing rule (Confluent contract coverage)** | Aligned | The docs target self-managed Connect (acceptable when fully-managed gap exists — see `wiki/patterns/connect-deployment-models.md`). The implicit assumption that Connect is self-managed should be made explicit; for net-new FSI engagements the canon default is fully-managed CC connectors (`wiki/patterns/fsi-canon-overlay-for-confluent-skills.md`). |
+| **FSI vendor-backing rule (Confluent contract coverage)** | Aligned | The docs target self-managed Connect (acceptable when fully-managed gap exists — see `wiki/patterns/connect-deployment-models.md`). The implicit assumption that Connect is self-managed should be made explicit; for net-new FSI deployments the canon default is fully-managed CC connectors (`wiki/patterns/fsi-canon-overlay-for-confluent-skills.md`). |
 | **DLQ canon (naming, headers)** | Drift | Both docs use `__dlq-<name>` prefix; wiki canon (`wiki/patterns/dead-letter-queue-design.md`) is `dlq.<connector-name>`. `__` is reserved for Kafka internal topics. |
 | **Connect deployment model** | Drift | Both docs assume self-managed-distributed. FSI canon defaults to fully-managed; self-managed is the escape hatch when there's no managed connector match, EOS source matters, or network locality forces it. Doc should state the trigger explicitly. |
 | Kubernetes runtime topology | Drift (minor) | StatefulSet is over-prescriptive; Deployment or CFK Connect CR is canonical. |
@@ -314,7 +314,7 @@ claims:
 
 The following claims could not be verified against wiki or MCP within this review:
 
-- Exact Dynatrace Grail DQL function names and pipe grammar (validated against general Dynatrace docs knowledge; should be re-validated against the customer's actual tenant version — Grail DQL has evolved across 2024–2026 releases).
+- Exact Dynatrace Grail DQL function names and pipe grammar (validated against general Dynatrace docs knowledge; should be re-validated against the target tenant version — Grail DQL has evolved across 2024–2026 releases).
 - Real-world OneAgent JMX extension behavior for **string-valued** MBean attributes (does it ingest as dimension on a synthetic metric, drop, or require explicit string-to-enum mapping?). The guide assumes this works transparently — needs confirmation against Dynatrace Extensions 2.0 spec.
 - Whether `dynatrace_event_alert` (Terraform provider) supports DQL-based alert conditions natively, or only metric-selector conditions. The Terraform snippet in dql-14 leaves this unspecified.
 - Per-tenant retention for Dynatrace events beyond the default 30 days — quote `guide-16` says "adjustable" without a citation.
@@ -326,7 +326,7 @@ Auto-stub candidates added to `wiki/_queue.md`:
 
 ## Recommendations
 
-1. **Rewrite all query/alert expressions in real DQL.** Replace `metric.name :max :splitBy("x")` with `timeseries val=avg(metric.name), by:{x}`. Replace `:filter(eq(...))` with `| filter <field> == <val>`. For alert rules in Dynatrace, choose **explicitly** between metric-selector-based and DQL-based alerts and stay consistent within the doc. **Until this is fixed, neither document is hand-off-ready for a customer.**
+1. **Rewrite all query/alert expressions in real DQL.** Replace `metric.name :max :splitBy("x")` with `timeseries val=avg(metric.name), by:{x}`. Replace `:filter(eq(...))` with `| filter <field> == <val>`. For alert rules in Dynatrace, choose **explicitly** between metric-selector-based and DQL-based alerts and stay consistent within the doc. **Until this is fixed, neither document is hand-off-ready.**
 2. **Audit every Connect JMX MBean / attribute against Apache Kafka 4.x docs.** The Connect MBean tree is well-documented at https://kafka.apache.org/documentation/#connect_monitoring — copy attribute names verbatim. Specific fixes:
    - `connector-errors-total` → `total-record-errors` / `total-record-failures` (on `task-error-metrics`)
    - `put-rate` / `poll-rate` → `sink-record-send-rate` / `source-record-poll-rate` (on `sink-task-metrics` / `source-task-metrics`)
@@ -337,7 +337,7 @@ Auto-stub candidates added to `wiki/_queue.md`:
 6. **Switch StatefulSet to Deployment** (or CFK Connect CR) for Connect workers. Add a one-sentence rationale: "Workers are stateless w.r.t. pod identity; framework state lives in internal Kafka topics. Deployment + HPA is the canonical topology."
 7. **Add a converter / Schema Registry monitoring section.** Both docs are silent on the most common Connect failure mode in FSI: converter mismatch (Avro/Protobuf source produced + JSON sink converter configured = silent DLQ flood). Watch `total-record-errors` per stage = `VALUE_CONVERTER`.
 8. **Drop the bare `connector_state` attribute reference** in the DQL doc — there is no such attribute; the field exists only in the REST API response. Either document the REST-scrape pattern or remove the row.
-9. **Validate against the Dynatrace customer tenant before publishing.** Many of the corrections above are documentation-level; the only way to verify Dynatrace-side claims is to run them in the actual environment.
+9. **Validate against the target Dynatrace tenant before publishing.** Many of the corrections above are documentation-level; the only way to verify Dynatrace-side claims is to run them in the actual environment.
 
 ---
 

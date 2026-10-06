@@ -893,7 +893,7 @@ timeseries
 
 ## Part F: Deployment Automation (Infrastructure-as-Code)
 
-For GoodLabs PS engagements, Dynatrace configuration is managed via Terraform and stored in Git.
+For professional-services hand-offs, Dynatrace configuration is managed via Terraform and stored in Git.
 
 ```hcl
 # terraform/dynatrace-connect-monitoring.tf
@@ -999,7 +999,7 @@ variable "dynatrace_api_token" {
 }
 ```
 
-**Deployment workflow (GoodLabs standard):**
+**Deployment workflow (standard):**
 
 ```bash
 # 1. Store credentials in Vault
@@ -1022,8 +1022,8 @@ git commit -m "Add Connect monitoring (dashboards + alerts + JMX extension) for 
 git push origin main
 ```
 
-**Post-engagement maintenance:**
-- Client owns the `/monitoring` folder in their infra repo
+**Post-hand-off maintenance:**
+- The platform team owns the `/monitoring` folder in their infra repo
 - Dashboard JSON, alert rules, extension YAML, and Terraform are version-controlled
 - Updates follow standard change control (PR → review → merge → deploy)
 

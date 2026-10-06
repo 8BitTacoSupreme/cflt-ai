@@ -4,11 +4,11 @@
 # ============================================================
 kafka_ca_dir: /etc/pki/kafka-ca
 kafka_ca_country: US
-kafka_ca_state: MA
-kafka_ca_locality: Boston
-kafka_ca_org: Fidelity
+kafka_ca_state: ST
+kafka_ca_locality: Anytown
+kafka_ca_org: FSI Firm
 kafka_ca_ou: Platform
-kafka_ca_common_name: Fidelity-Kafka-Root-CA
+kafka_ca_common_name: FsiFirm-Kafka-Root-CA
 kafka_ca_validity_days: 3650
 
 # ============================================================
@@ -41,7 +41,7 @@ kafka_truststore_filename: kafka.truststore.p12
 # ============================================================
 kafka_listener_port: 9093
 kafka_listener_name: SSL
-kafka_domain: kafka.fidelity.internal
+kafka_domain: kafka.fsifirm.internal
 kafka_server_properties: /etc/kafka/server.properties
 kafka_service_name: confluent-kafka    # systemd unit for restart handler
 

@@ -21,7 +21,7 @@ In FSI environments where money, identifiers, and addresses recur across dozens 
 A shared-types library is just a set of normal Schema Registry subjects, distinguished only by a reserved namespace prefix and `FULL_TRANSITIVE` compatibility. For an FSI firm:
 
 - Reserve a namespace: `com.fsifirm.common` (or your firm's reverse-DNS equivalent).
-- Use `TopicNameStrategy`-style subject names that match the fully qualified Avro name — `com.fsifirm.common.Money`, `com.fsifirm.common.MemberId`, etc. The "topic" doesn't exist; the subject is just a registry slot for the type.
+- Use `TopicNameStrategy`-style subject names that match the fully qualified Avro name — `com.fsifirm.common.Money`, `com.fsifirm.common.CustomerId`, etc. The "topic" doesn't exist; the subject is just a registry slot for the type.
 - Compatibility: `FULL_TRANSITIVE` on every shared type. These are consumed by many domains; both forward and backward compatibility, transitively across all versions, is the only safe default.
 
 Shared types and domain subjects coexist in the same registry. Schema IDs are assigned sequentially across all registrations, regardless of subject — there's no ID range reserved for shared types. Logical grouping comes from the subject naming convention (`com.fsifirm.common.*`), not from ID ranges.
@@ -73,10 +73,10 @@ Compatibility:  FULL_TRANSITIVE
 
 Subject `com.fsifirm.common.Money` now has versions 1 and 2, mapped to schema IDs 1001 and 1247. Both remain resolvable forever.
 
-### Example 2: `com.fsifirm.common.MemberId`, a wrapped primitive
+### Example 2: `com.fsifirm.common.CustomerId`, a wrapped primitive
 
 ```yaml
-Subject:        com.fsifirm.common.MemberId
+Subject:        com.fsifirm.common.CustomerId
 Version:        1
 Schema ID:      1002
 Compatibility:  FULL_TRANSITIVE
@@ -85,7 +85,7 @@ Compatibility:  FULL_TRANSITIVE
 ```json
 {
   "type": "record",
-  "name": "MemberId",
+  "name": "CustomerId",
   "namespace": "com.fsifirm.common",
   "fields": [
     {"name": "value", "type": "string"},
@@ -125,7 +125,7 @@ Compatibility:  FULL_TRANSITIVE
 }
 ```
 
-Naming it `UsAddress` rather than `Address` signals that international addresses are a different type, not a variant of this one. The APO/FPO codes and US territories are included in the enum because FSI firms with government or military member bases need them — leaving them out forces those records into a separate type or a free-form `state` string, both of which are worse.
+Naming it `UsAddress` rather than `Address` signals that international addresses are a different type, not a variant of this one. The APO/FPO/DPO codes and US territories are included in the enum because valid US mailing addresses include military postal codes — leaving them out forces those records into a separate type or a free-form `state` string, both of which are worse.
 
 ### Example 4: a domain schema that references the shared types
 
@@ -138,8 +138,8 @@ References:
   - name:     com.fsifirm.common.Money
     subject:  com.fsifirm.common.Money
     version:  2
-  - name:     com.fsifirm.common.MemberId
-    subject:  com.fsifirm.common.MemberId
+  - name:     com.fsifirm.common.CustomerId
+    subject:  com.fsifirm.common.CustomerId
     version:  1
 ```
 
@@ -150,8 +150,8 @@ References:
   "namespace": "com.fsifirm.payments",
   "fields": [
     {"name": "transferId", "type": "string"},
-    {"name": "fromMember", "type": "com.fsifirm.common.MemberId"},
-    {"name": "toMember", "type": "com.fsifirm.common.MemberId"},
+    {"name": "fromCustomer", "type": "com.fsifirm.common.CustomerId"},
+    {"name": "toCustomer", "type": "com.fsifirm.common.CustomerId"},
     {"name": "amount", "type": "com.fsifirm.common.Money"},
     {"name": "initiatedAt", "type": {"type": "long", "logicalType": "timestamp-millis"}},
     {"name": "status", "type": {
@@ -163,14 +163,14 @@ References:
 }
 ```
 
-What you see in the registry: `payments-value` v1, schema ID 2891, with explicit references to `com.fsifirm.common.Money` v2 and `com.fsifirm.common.MemberId` v1. A schema reference consists of three parts: a name (for Avro, the fully qualified schema name), a subject, and an exact version. The registry validates references at registration — if you try to register a subject that references a non-existent subject-version, registration fails. Referenced schemas must be registered first.
+What you see in the registry: `payments-value` v1, schema ID 2891, with explicit references to `com.fsifirm.common.Money` v2 and `com.fsifirm.common.CustomerId` v1. A schema reference consists of three parts: a name (for Avro, the fully qualified schema name), a subject, and an exact version. The registry validates references at registration — if you try to register a subject that references a non-existent subject-version, registration fails. Referenced schemas must be registered first.
 
 ### What the full library looks like
 
 ```
 Subject                              Versions   Latest ID   Compatibility
 com.fsifirm.common.Money             1, 2       1247        FULL_TRANSITIVE
-com.fsifirm.common.MemberId          1          1002        FULL_TRANSITIVE
+com.fsifirm.common.CustomerId          1          1002        FULL_TRANSITIVE
 com.fsifirm.common.AccountId         1          1004        FULL_TRANSITIVE
 com.fsifirm.common.UsAddress         1          1003        FULL_TRANSITIVE
 com.fsifirm.common.RoutingNumber     1          1005        FULL_TRANSITIVE
@@ -178,7 +178,7 @@ com.fsifirm.common.Timestamp         1          1006        FULL_TRANSITIVE
 com.fsifirm.common.TransactionType   1, 2       1389        FULL_TRANSITIVE
 com.fsifirm.common.AccountType       1          1008        FULL_TRANSITIVE
 payments-value                       1, 2, 3    2913        BACKWARD_TRANSITIVE
-members-value                        1, 2       2456        BACKWARD_TRANSITIVE
+customers-value                        1, 2       2456        BACKWARD_TRANSITIVE
 accounts-value                       1          2502        BACKWARD_TRANSITIVE
 account-events-value                 1, 2       2887        BACKWARD_TRANSITIVE
 ```
@@ -192,7 +192,7 @@ A few things worth noting about this layout:
 
 ## When to Use
 
-- You have cross-cutting types — `Money`, member/customer/account IDs, addresses, timestamps, transaction enums — that appear in three or more domain schemas.
+- You have cross-cutting types — `Money`, customer/account IDs, addresses, timestamps, transaction enums — that appear in three or more domain schemas.
 - You expect those types to evolve over years (new currencies, new ID issuers, new enum members).
 - You want one team (a C4E / data contracts / schema review group) to own the cross-domain types separately from per-domain schemas.
 - You're already on Avro or Protobuf — schema references are an Avro/Protobuf/JSON-Schema feature; not relevant if you're still on raw bytes or strings.
@@ -202,7 +202,7 @@ A few things worth noting about this layout:
 - **Referenced schemas must be registered first.** CI must apply the shared-types library before any domain subject that references it. Order matters in your Terraform/registration pipeline.
 - **Schema IDs are not portable across environments.** Dev `Money` v2 might be ID 1247; prod might be ID 73. Use Schema Linking (CC↔CC / CC↔CP) or the `subjects` export/import API; never hardcode IDs in code. See `concepts/schema-registry-best-practices.md` for the operational details.
 - **Don't over-share.** Every entry in the shared-types library becomes a cross-domain coordination point. If a type is really only used by one domain, it belongs in that domain's namespace.
-- **Don't wrap every primitive.** Wrap the ones that have a meaningful identity (`MemberId`, `AccountId`, `RoutingNumber`) and a plausible evolution path (validation metadata, check digits, issuer). A wrapped `EmailAddress` with one field is usually noise.
+- **Don't wrap every primitive.** Wrap the ones that have a meaningful identity (`CustomerId`, `AccountId`, `RoutingNumber`) and a plausible evolution path (validation metadata, check digits, issuer). A wrapped `EmailAddress` with one field is usually noise.
 - **Reference depth matters.** Schemas referencing schemas referencing schemas works but makes the resolved schema harder to read and harder to debug. Keep the reference graph one level deep where you can.
 - **Compatibility mode mismatch.** Shared types are `FULL_TRANSITIVE` (most restrictive). Domain subjects that reference them can use a looser mode (typically `BACKWARD_TRANSITIVE`). The compatibility check applied at registration is the *referencing* subject's mode, applied to the full resolved schema — including the referenced type's current shape. Adding a field to `Money` v2 with a default is still safe for a `BACKWARD_TRANSITIVE` `payments-value` because the resolved Avro is still backward-compatible. Type changes that aren't safe on `Money` itself were already blocked by `FULL_TRANSITIVE` on the shared subject.
 

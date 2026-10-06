@@ -338,7 +338,7 @@ This is the canonical FSI PII answer; see [FSI Compliance](fsi-compliance.md) fo
 
 - [Schema Registry Best Practices](schema-registry-best-practices.md) — operational surface, Data Contracts, CSFLE
 - [FSI Compliance](fsi-compliance.md) — PII categorization connects to regulatory frameworks
-- [Schema Registry Shared-Types Library](../patterns/schema-registry-shared-types.md) — shared types (Money, MemberId, UsAddress) include PII-tagged fields
+- [Schema Registry Shared-Types Library](../patterns/schema-registry-shared-types.md) — shared types (Money, CustomerId, UsAddress) include PII-tagged fields
 - [Schema Registry Adoption Playbook](../patterns/schema-registry-adoption-playbook.md) — adoption playbook sibling (detection + migration)
 - [Schema Evolution Strategies](schema-evolution-strategies.md) — compatibility modes for evolving inferred schemas
 

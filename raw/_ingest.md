@@ -27,24 +27,41 @@ Run: `python tools/wiki-compile.py --delta` to process.
 # entries moved to ## Processed below. Only the 2 pre-H.1 April-2026 entries remain in Pending.
 
 # === Observability Expansion (2026-05-20): 6 articles closing CC-vs-self-managed gap ===
-# Sequenced per /Users/jhogan/.claude/plans/make-a-plan-to-snuggly-giraffe.md
+# Sequenced per a local plan file.
 # All 6 articles processed 2026-05-20.
 
 ## Processed
 
+- path: raw/repos/kcp-bastion-migration-usage.md
+  source_url: local kcp source clone, local kcp working directory, and internal field notes (local, not client-visible); https://docs.confluent.io/cloud/current/clusters/migrate-kcp.html (MCP-validated)
+  notes: |
+    Practitioner's hands-on KCP (Copy Paste) usage — not compiled from the
+    marketing blog alone. Confirmed via confluent-docs MCP: official tool
+    name ("Copy Paste (kcp)"), command groups, bastion-host guidance for
+    private-network clusters, and gateway-based client cutover. Foregrounds
+    the standalone `kcp create-asset bastion-host` quick-provisioning use
+    case (the practitioner's primary use) ahead of the full multi-stage migration
+    pipeline, per explicit clarification. IAM policy tiers and generated
+    Terraform detail are sourced from the practitioner's own iteratively-hardened runbooks
+    (not officially published by Confluent) — flagged inline as unverified
+    against MCP. All real AWS account IDs/ARNs/credentials found in
+    msk-credentials.yaml and terraform.tfstate were excluded/generalized.
+  compiled: 2026-09-16
+  wiki_articles:
+    - wiki/patterns/kcp-msk-migration-bastion-host.md
+
 - path: raw/repos/cp-migration-demo-rehearsal.md
   source_url: ~/GoodLabs/cp-migration-demo (local repo, not pushed to a remote)
   notes: |
-    Hands-on rehearsal rig for the CP -> MRC live-migration plan from the
-    ongoing FSI engagement. Two tracks (Docker Compose + real cp-ansible),
+    Hands-on rehearsal rig for the CP -> MRC live-migration pattern. Two tracks (Docker Compose + real cp-ansible),
     both run and verified end-to-end in-session, not just written.
   compiled: 2026-09-08
   wiki_articles:
     - wiki/patterns/cp-mrc-migration-rehearsal-rig.md
 
-- path: /Users/jhogan/Downloads/mTLS-CP-LinuxOne.md
+- path: mTLS-CP-LinuxOne.md (user-provided runbook, not vendored)
   source_url: |
-    /Users/jhogan/Downloads/mTLS-CP-LinuxOne.md (raw user-provided runbook)
+    mTLS-CP-LinuxOne.md (raw user-provided runbook)
     https://docs.confluent.io/platform/current/security/protect-data/encrypt-tls.html
     https://docs.confluent.io/platform/current/security/authorization/acls/overview.html
     https://docs.confluent.io/platform/current/schema-registry/installation/config.html
@@ -52,7 +69,7 @@ Run: `python tools/wiki-compile.py --delta` to process.
     https://docs.confluent.io/platform/current/connect/security.html
   added: 2026-05-27
   notes: |
-    /wiki:ingest invoked with /Users/jhogan/Downloads/mTLS-CP-LinuxOne.md. The runbook
+    /wiki:ingest invoked with a user-provided mTLS-CP-LinuxOne.md. The runbook
     is a 628-line end-to-end Confluent Platform mTLS guide written with LinuxONE / IBM
     Semeru / FIPS context (Sections 0-9 plus Appendix A on s390x non-SSL hurdles and
     Appendix B on per-component debug recipes). Split into THREE wiki articles to keep
@@ -67,8 +84,8 @@ Run: `python tools/wiki-compile.py --delta` to process.
          (ssl.client.auth=required vs requested discouraged; ssl.endpoint.identification.
          algorithm) and ACL overview (StandardAuthorizer at org.apache.kafka.metadata.
          authorizer.StandardAuthorizer for KRaft; super.users; allow.everyone.if.no.acl.found;
-         ssl.principal.mapping.rules canonical name). Fidelity/internal-domain references in
-         the source were genericized to Example/example.internal.
+         ssl.principal.mapping.rules canonical name). Source-specific names/domains were replaced
+         with placeholders (Example/example.internal).
 
       2. wiki/patterns/cp-tls-debugging-by-component.md (pattern template) — Appendix B.
          Per-component debug recipes (client / broker-to-broker / SR kafkastore-vs-REST /
@@ -272,8 +289,7 @@ Run: `python tools/wiki-compile.py --delta` to process.
 - path: kafka-best-practices.md
   added: 2026-04-17
   notes: |
-    C4E wiki stub covering broker, producer, consumer, app-level, AKS, CC ops, and monitoring
-    guidance for fraud detection on CC + Azure AKS. /wiki:ingest invoked with target
+    Kafka best-practices notes covering broker, producer, consumer, app-level, and monitoring guidance. /wiki:ingest invoked with target
     wiki/patterns/latency-optimized-kafka-client.md. Raw source file NOT present in
     raw/articles/ at compile time (file referenced in queue but absent on disk). Article
     compiled via MCP-only path: cloud-agnostic latency baseline drawing on the
@@ -295,8 +311,7 @@ Run: `python tools/wiki-compile.py --delta` to process.
 - path: kafka-recommendations.md
   added: 2026-04-17
   notes: |
-    Detailed 4-phase triage/remediation plan for e2e latency on CC Dedicated + Azure AKS,
-    intended as source for outputs/reports/ and wiki stubs on azure-connection-management
+    End-to-end latency triage/remediation notes, intended as source for outputs/reports/ and wiki stubs on azure-connection-management
     and latency-optimized-kafka-client. Raw source file NOT present in raw/articles/ at
     compile time. Per the ingest-queue note this was always intended to land primarily as
     a report in outputs/reports/ (not a wiki article), with wiki coverage handled by the
@@ -499,12 +514,12 @@ Run: `python tools/wiki-compile.py --delta` to process.
 - path: raw/articles/shared-schema-howto.md
   added: 2026-05-15
   notes: |
-    FSI shared-types library walk-through (Money, MemberId, UsAddress, payments-value
+    FSI shared-types library walk-through (Money, CustomerId, UsAddress, payments-value
     referencing both). Compiled into a new pattern article covering library layout,
     schema references mechanics (name+subject+exact version, registered first, pinned),
     Schema Registry ID assignment behavior, and the FULL_TRANSITIVE → BACKWARD_TRANSITIVE
-    interaction across shared and domain subjects. NFCU references replaced with
-    "FSI firm" / `com.fsifirm.common` namespace per ingest args. Validated schema
+    interaction across shared and domain subjects. Source-specific names were replaced with
+    placeholders ("FSI firm" / `com.fsifirm.common` namespace) per ingest args. Validated schema
     references mechanics and subject-version-ID semantics via confluent-docs
     (Confluent Platform serdes-develop, schema-references and subject-name-strategy
     sections).

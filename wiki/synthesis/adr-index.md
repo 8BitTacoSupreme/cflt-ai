@@ -21,13 +21,13 @@ last_validated: 2026-04-28
 
 ## Summary
 
-Eight accepted ADRs document the foundational architectural decisions for the FSI Data Streaming Platform: serialization format (Avro), compatibility governance (tier-based), service discovery (Consul), connector deployment (self-managed on-prem), DR backend (Cluster Linking for CC), authentication (OAuth primary), topic naming convention, and DR tier classification. All authored by the FSI C4E team (March 2026).
+Eight illustrative reference ADRs capture the foundational architectural decisions for an FSI data streaming platform: serialization format (Avro), compatibility governance (tier-based), service discovery (Consul), connector deployment (self-managed on-prem), DR backend (Cluster Linking for CC), authentication (OAuth primary), topic naming convention, and DR tier classification.
 
 ## ADR Summary Table
 
 | ADR | Title | Status | Key Decision |
 |-----|-------|--------|-------------|
-| 001 | Avro as default schema format | Accepted | Avro mandatory; Protobuf with C4E approval; JSON Schema banned in prod |
+| 001 | Avro as default schema format | Accepted | Avro mandatory; Protobuf with platform-team approval; JSON Schema banned in prod |
 | 002 | Compatibility modes by SLA tier | Accepted | critical/compliance → FULL_TRANSITIVE; standard → BACKWARD_TRANSITIVE; best-effort → BACKWARD |
 | 003 | Consul for service discovery | Accepted | Single KV key flips Kafka + SR + Oracle endpoints atomically during DR |
 | 004 | Self-managed Connect on-prem | Accepted | Connect workers co-located with Oracle for sub-ms JDBC latency |
@@ -40,7 +40,7 @@ Eight accepted ADRs document the foundational architectural decisions for the FS
 
 ### ADR-001: Avro as Default Schema Format
 
-**Decision:** Apache Avro is the default for all FSI topics. Protobuf acceptable with C4E approval for teams with existing infrastructure. JSON Schema not permitted in production.
+**Decision:** Apache Avro is the default for all FSI topics. Protobuf acceptable with platform-team approval for teams with existing infrastructure. JSON Schema not permitted in production.
 
 **Rationale:** Compact binary serialization reduces CC costs. Strong financial logical types (decimal, timestamp-millis). FULL_TRANSITIVE compatibility well-defined in SR. First-class support across Connect, Flink SQL, TableFlow. Industry-dominant format in FSI Kafka deployments.
 
@@ -84,9 +84,9 @@ Exception: OFAC topics use FULL_TRANSITIVE regardless of tier.
 
 **Decision:** Kafka Connect workers deployed on-premises next to Oracle, connecting to CC via PrivateLink.
 
-**Rationale:** Co-location with Oracle for sub-ms JDBC latency (vs. 5-20ms through PrivateLink). CNCB transaction throughput is latency-sensitive. On-prem workers use Consul for Oracle endpoint resolution during DR. Managed connectors on CC don't support data contract rules execution.
+**Rationale:** Co-location with Oracle for sub-ms JDBC latency (vs. 5-20ms through PrivateLink). Core-banking transaction throughput is latency-sensitive. On-prem workers use Consul for Oracle endpoint resolution during DR. Managed connectors on CC don't support data contract rules execution.
 
-**Consequences:** FSI ops manages Connect health, upgrades, scaling. Distributed properties maintained for East and West bootstrap. DR includes connector pause/resume. JMX metrics exported to Dynatrace via OneAgent.
+**Consequences:** Platform ops manages Connect health, upgrades, scaling. Distributed properties maintained for East and West bootstrap. DR includes connector pause/resume. JMX metrics exported to Dynatrace via OneAgent.
 
 ---
 
@@ -94,7 +94,7 @@ Exception: OFAC topics use FULL_TRANSITIVE regardless of tier.
 
 **Decision:** Cluster Linking between two CC dedicated clusters (East active, West passive DR). MRC documented as future-state option for CP.
 
-**Rationale:** FSI's ~2h RPO target easily met by CL (mirror lag typically seconds). CL is fully managed on CC. MRC requires CP (self-managed) contradicting CC adoption direction. Consul pattern reduces CL failover to 6 scripted steps. RTO bottleneck is Oracle DG (5-30 min), not Kafka.
+**Rationale:** A typical ~2h RPO target easily met by CL (mirror lag typically seconds). CL is fully managed on CC. MRC requires CP (self-managed) contradicting CC adoption direction. Consul pattern reduces CL failover to 6 scripted steps. RTO bottleneck is Oracle DG (5-30 min), not Kafka.
 
 **Consequences:** RPO > 0 (typically seconds, within 2h target). Failover not fully automatic (6 steps). If RPO tightens to zero, must migrate to CP + MRC. Two clusters = separate CC billing.
 

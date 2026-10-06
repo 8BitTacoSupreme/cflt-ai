@@ -65,7 +65,7 @@
 | Inline footnote inside Canon section | Buries the hook; harder for Claude to surface as a top-level reference | |
 | New separate file `.claude/UPSTREAM-SKILLS.md` | Requires Claude Code config to auto-read; extra plumbing | |
 
-**Notes:** D-08 in CONTEXT.md. Project-root CLAUDE.md is already auto-loaded every session; new section is ~5 lines, declarative, follows existing heading conventions. Do NOT touch `~/.claude/CLAUDE.md` (jhogan's global file) — overlay is cflt-ai-specific (D-09).
+**Notes:** D-08 in CONTEXT.md. Project-root CLAUDE.md is already auto-loaded every session; new section is ~5 lines, declarative, follows existing heading conventions. Do NOT touch `~/.claude/CLAUDE.md` (the user's global file) — overlay is cflt-ai-specific (D-09).
 
 ---
 

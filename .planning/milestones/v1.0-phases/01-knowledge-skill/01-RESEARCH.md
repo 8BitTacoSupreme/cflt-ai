@@ -708,13 +708,13 @@ No missing dependencies. All required tools are available in the current Flox en
 
 ### Primary (HIGH confidence)
 
-- Direct code inspection: `/Users/jhogan/cflt-ai/tools/wiki-lint.py` — existing patterns for `parse_frontmatter()`, stale cutoff logic, `Path.rglob()`, argparse structure
-- Direct code inspection: `/Users/jhogan/cflt-ai/tools/wiki-search.py` — existing patterns for wiki-hit scoring
-- Direct code inspection: `/Users/jhogan/cflt-ai/tests/conftest.py` + `test_manifest.py` — existing pytest fixture patterns, class-based test organization
-- Direct code inspection: `/Users/jhogan/cflt-ai/.claude/commands/ask.md` — current 5-step skill structure to extend
-- Direct code inspection: `/Users/jhogan/cflt-ai/.claude/commands/wiki/recommend.md` — steps 1-7 that map to the reconsolidate mode
-- Direct code inspection: `/Users/jhogan/cflt-ai/.claude/commands/wiki/references/article-format.md` — YAML front matter schema (confirmed `last_validated` is absent and must be added)
-- Direct code inspection: `/Users/jhogan/cflt-ai/wiki/_queue.md` — existing queue section format
+- Direct code inspection: `<repo-root>/tools/wiki-lint.py` — existing patterns for `parse_frontmatter()`, stale cutoff logic, `Path.rglob()`, argparse structure
+- Direct code inspection: `<repo-root>/tools/wiki-search.py` — existing patterns for wiki-hit scoring
+- Direct code inspection: `<repo-root>/tests/conftest.py` + `test_manifest.py` — existing pytest fixture patterns, class-based test organization
+- Direct code inspection: `<repo-root>/.claude/commands/ask.md` — current 5-step skill structure to extend
+- Direct code inspection: `<repo-root>/.claude/commands/wiki/recommend.md` — steps 1-7 that map to the reconsolidate mode
+- Direct code inspection: `<repo-root>/.claude/commands/wiki/references/article-format.md` — YAML front matter schema (confirmed `last_validated` is absent and must be added)
+- Direct code inspection: `<repo-root>/wiki/_queue.md` — existing queue section format
 - `python3 --version` (3.9.6) + `pytest --version` (8.4.2) — confirmed in environment
 - `python3 -m pytest tests/ -q` — 57 tests pass, baseline confirmed
 

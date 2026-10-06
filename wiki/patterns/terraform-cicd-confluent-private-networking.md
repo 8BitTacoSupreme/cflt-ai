@@ -15,7 +15,7 @@ last_validated: 2026-07-29
 
 ## Summary
 
-The Confluent Terraform provider operates on **two planes with different network reachability**, and that single fact dictates how you structure GitHub Actions CI/CD when the Confluent Cloud cluster uses private networking (PrivateLink / VPC peering / Private Network Interface / Transit Gateway). Management-plane resources (environments, clusters, networks, service accounts, RBAC, API keys, identity pools) talk to the **public** `api.confluent.cloud`; data-plane resources (topics, ACLs, schemas, Flink statements, connectors) talk to the cluster's **private** REST / Schema Registry endpoint, which has no public IP. A GitHub-*hosted* runner plans the management plane fine and then times out on the first topic — so data-plane Terraform must run on a **self-hosted runner inside the VPC**, the code must be **split by plane into separate state**, and auth should be **GitHub OIDC → Confluent identity pool** (short-lived) rather than long-lived keys. This is the standard shape for a Precisely → Confluent Cloud CDC landing zone, where the runner rides the same private path the CDC agents use.
+The Confluent Terraform provider operates on **two planes with different network reachability**, and that single fact dictates how you structure GitHub Actions CI/CD when the Confluent Cloud cluster uses private networking (PrivateLink / VPC peering / Private Network Interface / Transit Gateway). Management-plane resources (environments, clusters, networks, service accounts, RBAC, API keys, identity pools) talk to the **public** `api.confluent.cloud`; data-plane resources (topics, ACLs, schemas, Flink statements, connectors) talk to the cluster's **private** REST / Schema Registry endpoint, which has no public IP. A GitHub-*hosted* runner plans the management plane fine and then times out on the first topic — so data-plane Terraform must run on a **self-hosted runner inside the VPC**, the code must be **split by plane into separate state**, and auth should be **GitHub OIDC → Confluent identity pool** (short-lived) rather than long-lived keys. This is the standard shape for a third-party CDC agent (e.g. Precisely, Qlik, Debezium) → Confluent Cloud landing zone, where the runner rides the same private path the CDC agents use.
 
 ## Pattern
 
@@ -56,7 +56,7 @@ PrivateLink doesn't change the plane split, but it sharpens the runner requireme
 - **Per-AZ endpoints, ≤10 per gateway.** PL endpoints are per-AZ; the ARC node pool must span the AZs that have an endpoint or a runner pod can land with no path.
 - **One gateway covers Kafka + SR + Flink** (Enterprise). So `confluent_schema` (SR) and `confluent_flink_statement` (client→Flink) resolve through the same gateway — but confirm SR DNS specifically, not just Kafka.
 - **Management plane stays public under PL.** `api.confluent.cloud` is not behind PrivateLink, so plane A still needs the runner's public egress — the split is required by PL's own boundary, not just convenient.
-- **On-prem/mainframe can't reach PL directly.** If Precisely CDC agents (or z/OS Connect CDC) are on-prem, route through a shared-services VPC you own, then PL from there; co-locate the runner in that VPC.
+- **On-prem/mainframe can't reach PL directly.** If third-party CDC agents (e.g. Precisely, Qlik, or z/OS Connect CDC) are on-prem, route through a shared-services VPC you own, then PL from there; co-locate the runner in that VPC.
 
 ### 3. Auth — OIDC and short-lived, not long-lived GitHub secrets
 
@@ -84,7 +84,7 @@ terraform {
 
 - Any Confluent Cloud environment on **private networking** (Enterprise/Dedicated with PrivateLink, peering, PNI, or Transit Gateway) managed as code through GitHub Actions.
 - FSI landing zones where public data-plane access is prohibited and CI must run inside the trust boundary.
-- **Precisely → Confluent Cloud CDC pipelines**, where CDC agents already run in-VPC over PrivateLink and Terraform manages the Confluent landing zone (topics, schemas, service accounts, ACLs) — the runner co-locates with the agents' subnet. See the companion runbook's Precisely section.
+- **Third-party CDC agent (e.g. Precisely, Qlik, Debezium) → Confluent Cloud pipelines**, where CDC agents already run in-VPC over PrivateLink and Terraform manages the Confluent landing zone (topics, schemas, service accounts, ACLs) — the runner co-locates with the agents' subnet. See the companion runbook's third-party CDC landing zone section.
 
 ## Caveats
 
