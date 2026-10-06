@@ -428,6 +428,134 @@ This ensures the proxy is running whenever Claude Code starts.
 
 ---
 
+## Client Compatibility Matrix
+
+Headroom is a local API proxy — it works with any tool that can be configured to route through an HTTP proxy or respects the `ANTHROPIC_BASE_URL` environment variable. Here's what's supported:
+
+### Supported Clients (Recommended)
+
+| Client | Status | Setup | Notes |
+|--------|--------|-------|-------|
+| **Claude Code CLI** | ✅ Fully Supported | `ANTHROPIC_BASE_URL=http://127.0.0.1:8787` | Recommended; env var works perfectly |
+| **Python SDK** (`anthropic`) | ✅ Fully Supported | `ANTHROPIC_BASE_URL=http://127.0.0.1:8787 python script.py` | Direct integration; best savings |
+| **Node.js SDK** (`@anthropic-ai/sdk`) | ✅ Fully Supported | `ANTHROPIC_BASE_URL=http://127.0.0.1:8787 node app.js` | Direct integration; works in scripts and apps |
+| **Go SDK** (`github.com/anthropics/anthropic-sdk-go`) | ✅ Fully Supported | Set `BaseURL` in client config to `http://127.0.0.1:8787` | Code-level configuration required |
+| **OpenAI-compatible clients** | ✅ Supported | `OPENAI_BASE_URL=http://127.0.0.1:8787/v1` | Any tool that supports OpenAI proxy routing |
+
+### Partially Supported / Workarounds Required
+
+| Client | Status | Workaround | Complexity |
+|--------|--------|-----------|------------|
+| **Claude Desktop App** | ⚠️ No Native Support | System proxy + certificate pinning bypass | High (not recommended) |
+| **Claude.ai (Web)** | ❌ Not Supported | Browser DevTools proxy (won't compress server responses) | High (not recommended) |
+| **Cursor Editor** | ✅ Supported | Configure in `~/.cursor/settings.json` like Claude Code | Medium |
+| **VS Code Extensions** | ✅ Supported | `ANTHROPIC_BASE_URL` env var respected | Low |
+| **Integrations (Make, Zapier)** | ⚠️ Limited | Depends on integration's proxy support | High (contact provider) |
+
+### Not Supported
+
+| Client | Why | Alternative |
+|--------|-----|-------------|
+| **Claude Mobile Apps** (iOS/Android) | No proxy configuration; binary protocol | Use Claude Code on desktop for cost optimization |
+| **Anthropic Workbench** | Web-based, direct API only | Use CLI version locally |
+| **Third-party ChatGPT clones** | Not Anthropic clients | Not applicable |
+
+---
+
+### Setup Examples by SDK
+
+#### Python
+```bash
+export ANTHROPIC_BASE_URL=http://127.0.0.1:8787
+python your_script.py
+```
+
+```python
+# Or configure in code:
+from anthropic import Anthropic
+client = Anthropic(api_key="sk-...", base_url="http://127.0.0.1:8787")
+```
+
+#### Node.js
+```bash
+export ANTHROPIC_BASE_URL=http://127.0.0.1:8787
+node your_app.js
+```
+
+```javascript
+// Or configure in code:
+const Anthropic = require("@anthropic-ai/sdk");
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  baseURL: "http://127.0.0.1:8787",
+});
+```
+
+#### Go
+```go
+import "github.com/anthropics/anthropic-sdk-go"
+
+client := anthropic.NewClient(
+  anthropic.WithAPIKey(os.Getenv("ANTHROPIC_API_KEY")),
+  anthropic.WithBaseURL("http://127.0.0.1:8787"),
+)
+```
+
+#### cURL / Direct API
+```bash
+export ANTHROPIC_BASE_URL=http://127.0.0.1:8787
+
+curl \
+  -H "x-api-key: $ANTHROPIC_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{...}' \
+  "$ANTHROPIC_BASE_URL/v1/messages"
+```
+
+---
+
+### Headroom with System Proxy (Advanced / Not Recommended)
+
+**If you need Desktop/Web UI interception:**
+
+⚠️ **This is complex, may break things, and is not officially supported.**
+
+1. **Bind Headroom to your machine's IP:**
+   ```bash
+   headroom proxy --host 0.0.0.0 --port 8787
+   # Now accessible at http://<your-ip>:8787
+   ```
+
+2. **Use a system proxy tool** (macOS example):
+   - Charles Proxy, Burp Suite, or `mitmproxy`
+   - Configure to route Anthropic API calls through Headroom
+   - May require SSL certificate installation and trust
+
+3. **Desktop app routing:**
+   - Set system HTTP proxy in macOS Settings
+   - Desktop app may bypass if it pins certificates or validates SSL
+   - Breakage risk is high
+
+**Recommendation:** Don't do this. Instead, standardize your team on Claude Code CLI + SDKs where Headroom works perfectly.
+
+---
+
+### Team Rollout Strategy
+
+For Enterprise teams:
+
+1. **Phase 1:** Deploy to Claude Code CLI users (easiest, highest immediate savings)
+2. **Phase 2:** Integrate with Python/Node.js backend services (engineering teams)
+3. **Phase 3:** Provide SDK integration guidance (data science, automation teams)
+4. **Phase 4:** (Skip Desktop/Web — not worth the complexity)
+
+**Expected savings by tier:**
+- CLI users: 50–75% input token reduction
+- SDK users (frequent requests): 60–80% reduction
+- Web/Desktop users: 0% (no proxy support)
+
+---
+
 ## FAQ
 
 **Q: Is my data sent to Headroom servers?**
@@ -473,4 +601,5 @@ Claude Code will use the default API endpoint. Headroom proxy can keep running; 
 - **2026-10-06:** Initial runbook created
 - **2026-10-06:** Added Privacy & Telemetry section with env var recommendations
 - **2026-10-06:** Added Security Audit Results (verified Enterprise-safe)
+- **2026-10-06:** Added Client Compatibility Matrix with SDK setup examples
 - **Author:** Claude Haiku 4.5
