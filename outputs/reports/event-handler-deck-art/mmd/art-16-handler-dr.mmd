@@ -1,0 +1,15 @@
+flowchart LR
+  subgraph R1["Region A — primary"]
+    TA[(topics)] --> HA["Handler<br/>group: payments-settle"]
+    HA --- SA[("state store")]
+  end
+  subgraph R2["Region B — standby"]
+    TB[("mirror topics<br/>read-only until failover")] --> HB["Handler — warm standby<br/>same group.id"]
+    HB --- SB[("state store<br/><b>restore time = your RTO</b>")]
+  end
+  TA -->|"Cluster Link<br/>+ consumer offset translation"| TB
+  ROUTE{"Application routing<br/>bootstrap indirection"} --> HA
+  ROUTE --> HB
+  DEC["Who flips it,<br/>and on what signal?"] -.-> ROUTE
+  style SB fill:#FDF3DC,stroke:#F2A900,color:#173A6C
+  style DEC fill:#FDF3DC,stroke:#F2A900,color:#173A6C

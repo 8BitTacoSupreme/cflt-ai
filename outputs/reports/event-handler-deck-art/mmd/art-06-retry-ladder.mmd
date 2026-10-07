@@ -1,0 +1,30 @@
+flowchart LR
+  IN[(input topic)] --> H[Handler]
+  H --> C{"Classify<br/>failure"}
+  C -->|Success| OUT[(output topic)]
+  C -->|"Semantic reject"| REJ[(rejects topic)]
+  C -->|"Poison / schema"| DLQ[(dlq topic)]
+  C -->|Transient| ATT{"attempt count<br/>from header"}
+  ATT -->|exhausted| DLQ
+  REJ --> PRODSURF["Product surface —<br/>an outcome, not an error"]
+  DLQ --> OPS["Owner + SLO + replay tool"]
+
+  subgraph LADDER["Non-blocking retry ladder"]
+    direction TB
+    R1[(retry.5s)] --> D1["delay consumer"]
+    R2[(retry.1m)] --> D2["delay consumer"]
+    R3[(retry.15m)] --> D3["delay consumer"]
+  end
+
+  ATT -->|1| R1
+  ATT -->|2| R2
+  ATT -->|3| R3
+
+  D1 --> RP["re-publish"]
+  D2 --> RP
+  D3 --> RP
+  RP --> BACK[["back to the input topic —<br/>the handler stays the only<br/>place logic runs"]]
+
+  style DLQ fill:#FDF3DC,stroke:#F2A900,color:#173A6C
+  style OPS fill:#FDF3DC,stroke:#F2A900,color:#173A6C
+  style BACK fill:#E3F5F4,stroke:#00A6A0,color:#173A6C

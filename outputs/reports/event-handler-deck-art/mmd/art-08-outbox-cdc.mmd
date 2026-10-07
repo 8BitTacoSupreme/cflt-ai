@@ -1,0 +1,14 @@
+flowchart LR
+  subgraph App[App-owned system]
+    SVC[Service] -->|single tx| DB[(App DB)]
+    SVC -->|single tx| OB[(outbox table)]
+  end
+  subgraph Legacy[System of record we do not own]
+    SOR[(Core / mainframe DB)] --> LOG[(Change log)]
+  end
+  OB --> CON1[CDC connector]
+  LOG --> CON2[CDC connector]
+  CON1 --> T[(canonical event topic)]
+  CON2 --> NORM[Normalizer handler]
+  NORM --> T
+  T --> DOWN[Downstream handlers]

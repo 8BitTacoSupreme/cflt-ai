@@ -23,6 +23,12 @@ outputs/scaffolded/
 # Promotion candidates (tools/promote-canon.py) — transient review artifacts.
 outputs/promote/
 
+# Packaged deliverables and tool dumps — regenerate from the tracked sources, do not commit.
+outputs/**/*.tar.gz
+outputs/**/*.zip
+outputs/**/*.docx
+repomix-output.xml
+
 # Client/engagement canon silos are NEVER committed to the shared repo. They live in
 # a private overlay repo loaded via CFLT_CANON_EXTERNAL_PATH (see CONTRIBUTING.md).
 # Only the acme-bank demo and the scaffold README/.gitkeep stay tracked.

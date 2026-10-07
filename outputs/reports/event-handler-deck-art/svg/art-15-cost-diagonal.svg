@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" font-family="Inter, 'Segoe UI', 'Helvetica Neue', sans-serif">
+  <title>What the diagonal costs</title>
+  <defs>
+    <linearGradient id="wedge" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#00A6A0" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#173A6C" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="#FFFFFF"/>
+
+  <text x="80" y="66" font-size="30" font-weight="600" fill="#173A6C">What the diagonal costs</text>
+  <text x="80" y="96" font-size="17" fill="#5A6572">Four levers, and they are the only four.</text>
+
+  <!-- ghosted taxonomy grid, same geometry as ART-1 -->
+  <g opacity="0.3">
+    <rect x="260" y="140" width="1220" height="580" fill="none" stroke="#5A6572" stroke-width="1.5"/>
+    <line x1="870" y1="140" x2="870" y2="720" stroke="#5A6572" stroke-width="1" stroke-dasharray="5 5"/>
+    <line x1="260" y1="430" x2="1480" y2="430" stroke="#5A6572" stroke-width="1" stroke-dasharray="5 5"/>
+    <g fill="none" stroke="#B8C2CC" stroke-width="1.2">
+      <rect x="300" y="182" width="250" height="40" rx="8"/><rect x="300" y="232" width="250" height="40" rx="8"/>
+      <rect x="300" y="282" width="250" height="40" rx="8"/>
+      <rect x="910" y="182" width="270" height="40" rx="8"/><rect x="910" y="232" width="270" height="40" rx="8"/>
+      <rect x="910" y="282" width="270" height="40" rx="8"/><rect x="910" y="332" width="270" height="40" rx="8"/>
+      <rect x="300" y="472" width="250" height="40" rx="8"/><rect x="300" y="522" width="250" height="40" rx="8"/>
+      <rect x="300" y="572" width="250" height="40" rx="8"/><rect x="300" y="622" width="250" height="40" rx="8"/>
+      <rect x="570" y="622" width="272" height="40" rx="8"/>
+      <rect x="910" y="472" width="270" height="40" rx="8"/><rect x="910" y="522" width="270" height="40" rx="8"/>
+    </g>
+  </g>
+  <g opacity="0.55" font-size="15" font-weight="600" fill="#5A6572">
+    <text x="870" y="770" text-anchor="middle">Single stream  →  Multi-stream / joined</text>
+    <text x="0" y="0" text-anchor="middle" transform="translate(200,430) rotate(-90)">Stateless  →  Stateful</text>
+  </g>
+
+  <!-- widening cost wedge -->
+  <polygon points="327,660 1411,119 1449,201 333,671" fill="url(#wedge)"/>
+
+  <!-- markers along the wedge -->
+  <g>
+    <circle cx="550" cy="564" r="9" fill="#FFFFFF" stroke="#173A6C" stroke-width="3"/>
+    <line x1="550" y1="564" x2="596" y2="620" stroke="#5A6572" stroke-width="1.2"/>
+    <rect x="600" y="598" width="256" height="50" rx="8" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.4"/>
+    <text x="728" y="620" font-size="16" font-weight="600" fill="#173A6C" text-anchor="middle">partitions</text>
+    <text x="728" y="638" font-size="12" fill="#5A6572" text-anchor="middle">parallelism floor + rebalance cost</text>
+  </g>
+  <g>
+    <circle cx="770" cy="463" r="9" fill="#FFFFFF" stroke="#173A6C" stroke-width="3"/>
+    <line x1="770" y1="463" x2="816" y2="519" stroke="#5A6572" stroke-width="1.2"/>
+    <rect x="820" y="497" width="256" height="50" rx="8" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.4"/>
+    <text x="948" y="519" font-size="16" font-weight="600" fill="#173A6C" text-anchor="middle">state size</text>
+    <text x="948" y="537" font-size="12" fill="#5A6572" text-anchor="middle">compute + restore + changelog</text>
+  </g>
+  <g>
+    <circle cx="990" cy="362" r="9" fill="#FFFFFF" stroke="#173A6C" stroke-width="3"/>
+    <line x1="990" y1="362" x2="1036" y2="418" stroke="#5A6572" stroke-width="1.2"/>
+    <rect x="1040" y="396" width="256" height="50" rx="8" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.4"/>
+    <text x="1168" y="418" font-size="16" font-weight="600" fill="#173A6C" text-anchor="middle">retention</text>
+    <text x="1168" y="436" font-size="12" fill="#5A6572" text-anchor="middle">storage + how far back you replay</text>
+  </g>
+  <g>
+    <circle cx="1210" cy="261" r="9" fill="#FFFFFF" stroke="#173A6C" stroke-width="3"/>
+    <line x1="1210" y1="261" x2="1190" y2="320" stroke="#5A6572" stroke-width="1.2"/>
+    <rect x="1062" y="320" width="256" height="50" rx="8" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.4"/>
+    <text x="1190" y="342" font-size="16" font-weight="600" fill="#173A6C" text-anchor="middle">egress</text>
+    <text x="1190" y="360" font-size="12" fill="#5A6572" text-anchor="middle">cross-AZ, region, cluster</text>
+  </g>
+
+  <!-- end captions -->
+  <rect x="80" y="686" width="290" height="62" rx="9" fill="#E3F5F4" stroke="#00A6A0" stroke-width="1.6"/>
+  <text x="225" y="712" font-size="14.5" fill="#173A6C" text-anchor="middle">parallelism × throughput,</text>
+  <text x="225" y="732" font-size="14.5" fill="#173A6C" text-anchor="middle">and nothing else</text>
+
+  <rect x="900" y="96" width="392" height="62" rx="9" fill="#EAF1FA" stroke="#173A6C" stroke-width="1.8"/>
+  <text x="1096" y="122" font-size="14.5" fill="#173A6C" text-anchor="middle">state + joins + timers +</text>
+  <text x="1096" y="142" font-size="14.5" fill="#173A6C" text-anchor="middle">a compensating path you also pay for</text>
+  <line x1="1292" y1="140" x2="1360" y2="168" stroke="#173A6C" stroke-width="1.4"/>
+
+  <text x="80" y="836" font-size="15.5" fill="#173A6C">A handler is cheap to write and expensive to hold. Cost accrues at rest, not at authoring time —</text>
+  <text x="80" y="862" font-size="15.5" fill="#5A6572">so price your top three handlers against these four levers before the next planning cycle.</text>
+</svg>

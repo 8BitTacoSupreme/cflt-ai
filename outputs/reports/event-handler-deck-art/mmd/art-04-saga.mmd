@@ -1,0 +1,16 @@
+stateDiagram-v2
+  [*] --> Received
+  Received --> Validated: validate
+  Received --> Rejected: invalid
+  Validated --> Reserved: reserve funds
+  Reserved --> Fulfilled: confirm
+  Reserved --> Compensating: timeout / downstream fail
+  Compensating --> Released: release reservation
+  Fulfilled --> [*]
+  Rejected --> [*]
+  Released --> [*]
+  note right of Compensating
+    Every non-terminal state
+    has a timeout and a
+    compensating action.
+  end note

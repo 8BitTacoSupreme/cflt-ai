@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" font-family="Inter, 'Segoe UI', 'Helvetica Neue', sans-serif">
+  <title>Maturity model — ad hoc to self-service</title>
+  <rect width="1600" height="900" fill="#FFFFFF"/>
+
+  <text x="80" y="76" font-size="30" font-weight="600" fill="#173A6C">Maturity model</text>
+  <text x="80" y="106" font-size="17" fill="#5A6572">Ad hoc → templated → governed → self-service.</text>
+
+  <text x="800" y="196" font-size="16" fill="#5A6572" text-anchor="middle" font-style="italic">One change moves a team up one stage — pick it deliberately.</text>
+
+  <!-- chevron ribbon -->
+  <g>
+    <path d="M100 230 L420 230 L470 300 L420 370 L100 370 Z" fill="#D6E3F2"/>
+    <path d="M420 230 L740 230 L790 300 L740 370 L420 370 L470 300 Z" fill="#A9C4E4"/>
+    <path d="M740 230 L1060 230 L1110 300 L1060 370 L740 370 L790 300 Z" fill="#5A8FC8"/>
+    <path d="M1060 230 L1440 230 L1440 370 L1060 370 L1110 300 Z" fill="#173A6C"/>
+  </g>
+  <g font-size="21" font-weight="700">
+    <text x="255" y="309" fill="#173A6C" text-anchor="middle">1 · Ad hoc</text>
+    <text x="595" y="309" fill="#173A6C" text-anchor="middle">2 · Templated</text>
+    <text x="920" y="309" fill="#FFFFFF" text-anchor="middle">3 · Governed</text>
+    <text x="1265" y="309" fill="#FFFFFF" text-anchor="middle">4 · Self-service</text>
+  </g>
+
+  <!-- captions -->
+  <g font-size="15" fill="#5A6572">
+    <g transform="translate(120,430)">
+      <line x1="0" y1="-24" x2="0" y2="120" stroke="#D6E3F2" stroke-width="3"/>
+      <text x="18" y="0">Handlers hand-rolled.</text>
+      <text x="18" y="26">DLQs unowned.</text>
+      <text x="18" y="52">Testing manual.</text>
+    </g>
+    <g transform="translate(460,430)">
+      <line x1="0" y1="-24" x2="0" y2="120" stroke="#A9C4E4" stroke-width="3"/>
+      <text x="18" y="0">Golden-path template adopted.</text>
+      <text x="18" y="26">Schema gate in CI.</text>
+      <text x="18" y="52">DLQ owners named.</text>
+    </g>
+    <g transform="translate(790,430)">
+      <line x1="0" y1="-24" x2="0" y2="120" stroke="#5A8FC8" stroke-width="3"/>
+      <text x="18" y="0">All infra as code.</text>
+      <text x="18" y="26">Contracts enforced. SLOs per handler.</text>
+      <text x="18" y="52">Canary standard.</text>
+    </g>
+    <g transform="translate(1130,430)">
+      <line x1="0" y1="-24" x2="0" y2="120" stroke="#173A6C" stroke-width="3"/>
+      <text x="18" y="0">Teams ship handlers without</text>
+      <text x="18" y="26">platform involvement.</text>
+      <text x="18" y="52">Platform owns the paved road only.</text>
+    </g>
+  </g>
+
+  <!-- scorecard axes -->
+  <line x1="100" y1="620" x2="1440" y2="620" stroke="#E1E6EB" stroke-width="1.5"/>
+  <text x="100" y="672" font-size="16" font-weight="600" fill="#173A6C">Score each handler 0–3 on five axes. The low score is your next sprint.</text>
+  <g font-size="15" fill="#5A6572">
+    <g transform="translate(100,706)">
+      <rect x="0" y="0" width="248" height="52" rx="8" fill="#F4F6F8" stroke="#5A6572" stroke-width="1.2"/>
+      <text x="124" y="32" text-anchor="middle" fill="#173A6C">Contract</text>
+    </g>
+    <g transform="translate(374,706)">
+      <rect x="0" y="0" width="248" height="52" rx="8" fill="#F4F6F8" stroke="#5A6572" stroke-width="1.2"/>
+      <text x="124" y="32" text-anchor="middle" fill="#173A6C">Error path</text>
+    </g>
+    <g transform="translate(648,706)">
+      <rect x="0" y="0" width="248" height="52" rx="8" fill="#F4F6F8" stroke="#5A6572" stroke-width="1.2"/>
+      <text x="124" y="32" text-anchor="middle" fill="#173A6C">Test depth</text>
+    </g>
+    <g transform="translate(922,706)">
+      <rect x="0" y="0" width="248" height="52" rx="8" fill="#F4F6F8" stroke="#5A6572" stroke-width="1.2"/>
+      <text x="124" y="32" text-anchor="middle" fill="#173A6C">Deploy automation</text>
+    </g>
+    <g transform="translate(1196,706)">
+      <rect x="0" y="0" width="244" height="52" rx="8" fill="#F4F6F8" stroke="#5A6572" stroke-width="1.2"/>
+      <text x="122" y="32" text-anchor="middle" fill="#173A6C">Observability</text>
+    </g>
+  </g>
+</svg>

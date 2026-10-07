@@ -1,0 +1,12 @@
+flowchart LR
+  T[(input topic)] --> BLUE["Handler v1<br/>group: handler-blue"]
+  T --> GREEN["Handler v2<br/>group: handler-green<br/><b>starts at blue's committed offsets</b>"]
+  BLUE --> OUT[("output topic — live")]
+  GREEN --> SHADOW[("output topic — shadow")]
+  OUT --> DIFF{Diff engine}
+  SHADOW --> DIFF
+  DIFF --> GATE{"Gates:<br/>lag SLO, error rate,<br/>DLQ rate, diff rate"}
+  GATE -->|Pass| CUT["Cut over: green writes live,<br/>blue held warm"]
+  GATE -->|Fail| ROLL["Stop green,<br/>blue never interrupted"]
+  COST["Double read for the<br/>shadow window — time-box it"] -.-> GREEN
+  style COST fill:#FDF3DC,stroke:#F2A900,color:#173A6C

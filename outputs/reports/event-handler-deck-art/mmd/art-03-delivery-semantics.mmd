@@ -1,0 +1,12 @@
+flowchart TD
+  A[New handler] --> B{Sink idempotent<br/>or has natural dedup key?}
+  B -->|Yes| C[At-least-once<br/>+ idempotent write]
+  B -->|No| S{Is the effect inside Kafka?<br/><i>read-process-write, one cluster</i>}
+  S -->|"No — external system"| H["At-least-once<br/>+ explicit dedup store<br/><b>EOS cannot cross this boundary</b>"]
+  S -->|Yes| D{Handler owns durable state<br/><i>or</i> duplicate visible to<br/>a customer or ledger?}
+  D -->|Yes| F["Transactional EOS<br/>processing.guarantee = exactly_once_v2"]
+  D -->|No| C
+  C --> Z[Record the choice in<br/>the service manifest]
+  F --> Z
+  H --> Z
+  style H fill:#FDF3DC,stroke:#F2A900,color:#173A6C

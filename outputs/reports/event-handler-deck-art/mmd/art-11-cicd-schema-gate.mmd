@@ -1,0 +1,15 @@
+flowchart LR
+  A[Commit] --> B[Build + codegen from schema]
+  B --> C[Unit tests]
+  C --> D{"Schema compatibility<br/>vs registry<br/><i>syntactic</i>"}
+  D -->|Incompatible| X["Fail fast<br/>the 10 most valuable seconds"]
+  D -->|Compatible| DC{"Data Contract rules<br/><i>semantic</i>"}
+  DC -->|"Rule violation"| X
+  DC -->|Pass| E["Component tests<br/>containerized broker + SR"]
+  E --> F[Provision ephemeral<br/>namespaced topics]
+  F --> G[Integration tests<br/>on Confluent Cloud]
+  G --> TD[Tear down namespace]
+  TD --> I[Publish immutable artifact]
+  I --> J[Register schema]
+  J --> K["Deploy: shadow → canary → promote"]
+  style X fill:#FDF3DC,stroke:#F2A900,color:#173A6C

@@ -1,0 +1,7 @@
+flowchart LR
+  P[Producer] -->|1. write payload| OS[(Object store)]
+  P -->|2. emit pointer + checksum + size| T[(topic)]
+  T --> H[Handler]
+  H -->|3. fetch on demand| OS
+  H -->|4. emit result pointer| T2[(output topic)]
+  OS -.->|"retention policy must<br/>outlive topic retention"| OS

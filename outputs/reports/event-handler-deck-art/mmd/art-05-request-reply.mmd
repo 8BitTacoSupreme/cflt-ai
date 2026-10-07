@@ -1,0 +1,12 @@
+sequenceDiagram
+  autonumber
+  participant API as Caller / API
+  participant RQ as requests topic
+  participant H as Handler
+  participant RP as replies topic
+  API->>RQ: publish(correlationId, replyTo, traceparent)
+  RQ->>H: consume
+  H->>H: process (idempotent by correlationId)
+  H->>RP: publish(correlationId, result)
+  RP->>API: consume, filter on correlationId
+  Note over API: Hard client timeout →<br/>fall back to 202 + polling

@@ -1,0 +1,16 @@
+flowchart LR
+  IN[(source topic)] --> DS[Deserialize + validate]
+  DS --> G{Idempotency guard}
+  G -->|already seen| DROP[Drop and count]
+  G -->|new| BL[Business logic]
+  BL --- ST[(Handler state)]
+  BL --> OC{Outcome}
+  OC -->|success| SER[Serialize + propagate headers]
+  OC -->|transient| RT[(retry topic)]
+  OC -->|semantic reject| REJ[(rejects topic)]
+  OC -->|poison| DLQ[(dlq topic)]
+  DS -->|schema failure| DLQ
+  SER --> OUT[(sink topic)]
+  SER --> OBS[[metrics / traces / lineage]]
+  style DLQ fill:#FDF3DC,stroke:#F2A900,color:#173A6C
+  style RT fill:#FDF3DC,stroke:#F2A900,color:#173A6C

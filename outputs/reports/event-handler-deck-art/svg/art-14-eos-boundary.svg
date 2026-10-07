@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" font-family="Inter, 'Segoe UI', 'Helvetica Neue', sans-serif">
+  <title>The exactly-once boundary</title>
+  <defs>
+    <marker id="a14" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5A6572"/>
+    </marker>
+  </defs>
+  <rect width="1600" height="900" fill="#FFFFFF"/>
+
+  <text x="80" y="72" font-size="30" font-weight="600" fill="#173A6C">Exactly-once ends at the cluster boundary</text>
+  <text x="80" y="102" font-size="17" fill="#5A6572">Any effect on an external system is at-least-once, whatever <tspan font-family="monospace" font-size="15.5">processing.guarantee</tspan> says.</text>
+
+  <!-- the label sits clear of the crossing, so the crossing stays visible -->
+  <rect x="700" y="168" width="322" height="46" rx="8" fill="#FDF3DC" stroke="#F2A900" stroke-width="2"/>
+  <text x="861" y="198" font-size="17" font-weight="700" fill="#173A6C" text-anchor="middle">at-least-once, always</text>
+  <line x1="861" y1="216" x2="861" y2="268" stroke="#F2A900" stroke-width="2" stroke-dasharray="5 4"/>
+
+  <!-- transactional boundary -->
+  <rect x="110" y="250" width="900" height="450" rx="22" fill="#EAF1FA" stroke="#173A6C" stroke-width="5" stroke-dasharray="16 10"/>
+  <text x="140" y="300" font-size="18" font-weight="700" fill="#173A6C">transactional scope</text>
+  <text x="140" y="324" font-size="15" fill="#173A6C" font-family="monospace">processing.guarantee = exactly_once_v2</text>
+
+  <!-- input topic -->
+  <g stroke="#0074E4" stroke-width="2">
+    <path d="M196 420 v130 a54 14 0 0 0 108 0 v-130" fill="#FFFFFF"/>
+    <ellipse cx="250" cy="420" rx="54" ry="14" fill="#FFFFFF"/>
+  </g>
+  <text x="250" y="600" font-size="15" fill="#173A6C" text-anchor="middle">input topic</text>
+
+  <!-- handler -->
+  <polygon points="470,428 590,428 645,486 590,544 470,544 415,486" fill="#FFFFFF" stroke="#173A6C" stroke-width="2.5"/>
+  <text x="530" y="480" font-size="16" font-weight="600" fill="#173A6C" text-anchor="middle">handler</text>
+  <text x="530" y="502" font-size="13.5" fill="#5A6572" text-anchor="middle">read–process–write</text>
+
+  <!-- state store, kept inside the boundary label and all -->
+  <g stroke="#00A6A0" stroke-width="2">
+    <path d="M478 596 v42 a52 12 0 0 0 104 0 v-42" fill="#FFFFFF"/>
+    <ellipse cx="530" cy="596" rx="52" ry="12" fill="#FFFFFF"/>
+  </g>
+  <text x="530" y="672" font-size="14" fill="#00A6A0" text-anchor="middle">state store</text>
+
+  <!-- output topic -->
+  <g stroke="#0074E4" stroke-width="2">
+    <path d="M816 420 v130 a54 14 0 0 0 108 0 v-130" fill="#FFFFFF"/>
+    <ellipse cx="870" cy="420" rx="54" ry="14" fill="#FFFFFF"/>
+  </g>
+  <text x="870" y="600" font-size="15" fill="#173A6C" text-anchor="middle">output topic</text>
+
+  <!-- internal arrows -->
+  <g stroke="#5A6572" stroke-width="2" marker-end="url(#a14)" fill="none">
+    <line x1="308" y1="486" x2="405" y2="486"/>
+    <line x1="649" y1="486" x2="808" y2="486"/>
+    <line x1="530" y1="548" x2="530" y2="576"/>
+  </g>
+
+  <!-- the crossing arrow: the entire point of the image, and nothing overlaps it -->
+  <path d="M556 434 L620 300 L1200 300" fill="none" stroke="#F2A900" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="1246,300 1204,278 1204,322" fill="#F2A900"/>
+
+  <!-- external system -->
+  <path d="M1268 356 a54 54 0 0 1 54 -54 a68 68 0 0 1 128 -14 a50 50 0 0 1 24 95 a54 54 0 0 1 -54 41 h-120 a54 54 0 0 1 -32 -68 z"
+        fill="#F4F6F8" stroke="#5A6572" stroke-width="2"/>
+  <text x="1382" y="362" font-size="16" font-weight="600" fill="#173A6C" text-anchor="middle">external system</text>
+  <text x="1382" y="386" font-size="13.5" fill="#5A6572" text-anchor="middle">payment API, database,</text>
+  <text x="1382" y="406" font-size="13.5" fill="#5A6572" text-anchor="middle">notification</text>
+
+  <!-- crossing callout -->
+  <circle cx="1010" cy="300" r="13" fill="none" stroke="#F2A900" stroke-width="3"/>
+  <line x1="1010" y1="318" x2="1010" y2="372" stroke="#F2A900" stroke-width="1.6" stroke-dasharray="4 4"/>
+  <text x="1010" y="396" font-size="14.5" font-weight="600" fill="#173A6C" text-anchor="middle">the guarantee stops here</text>
+
+  <text x="560" y="790" font-size="15.5" fill="#5A6572" text-anchor="middle">The boundary is the slide. Everything inside it is a detail.</text>
+</svg>
