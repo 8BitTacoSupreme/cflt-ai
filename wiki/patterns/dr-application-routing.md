@@ -77,12 +77,12 @@ What "protocol-aware" enables that DNS abstraction cannot:
 - The proxy can **pause** clients during the cutover window (e.g., return empty `FetchResponse` payloads so consumers idle without rebalancing). The Kroxylicious `FetchResponseFilter` extension point demonstrates this is a sound protocol mechanism — empty fetches are indistinguishable from a quiet topic, and the heartbeat path is decoupled from fetch so group membership is preserved.
 - The proxy can **swap authentication** (e.g., client mTLS → broker SASL/OAUTHBEARER) so credentials don't need to be re-issued for the DR cluster.
 
-**RTO floor**: seconds (~5–30s for connection re-establishment), assuming the proxy is already running and the route flip is operator-initiated against a synced DR cluster.
+**RTO floor**: seconds (~5–30s for connection re-establishment), assuming the proxy is already running and the route flip is operator-initiated against a synced DR cluster. **For Confluent Gateway specifically, the documented switchover procedure requires stopping and restarting the gateway** — budget a full process restart, not a hot reconfiguration, and size the consumer impact against `session.timeout.ms` (default 45s).
 
-**Application restart**: Not required. This is the load-bearing benefit.
+**Application restart**: Not required. This is the load-bearing benefit — and it survives the gateway-restart caveat above, since clients simply reconnect to the same endpoint.
 
 **Vendor landscape**:
-- **Confluent Gateway** — Confluent-supported product (CFK / Docker), satisfies the FSI vendor-contract rule. Confluent's own DR guidance for the gateway explicitly cautions against client switchover for Kafka Streams / correctness-sensitive workloads.
+- **Confluent Gateway** — Confluent-supported product (CFK / Docker), satisfies the FSI vendor-contract rule. Confluent's own switchover documentation states the hard limitation directly: cluster switching **breaks message ordering and end-to-end consistency**, and Client Switchover must not be used for strict-ordering applications such as Kafka Streams. Switchover also requires a gateway restart.
 - **Kroxylicious** — open-source (Red Hat / IBM upstream), `FetchResponseFilter` and related extension points are first-class. Not generally a procurement option in regulated FSI without vendor-contract overlay; useful as the reference implementation for understanding the protocol mechanism.
 - **ORKA** (GoodLabs Studio) — protocol proxy with reported "Smart Switching Sets" for stateful blue/green. The protocol mechanism (consumer-pause via FetchResponse interception) is confirmed plausible via the Kroxylicious upstream pattern. The specific implementation and the stateful-preservation claim are **vendor-internal** — no public GoodLabs technical documentation as of 2026-05; do not attribute stateful guarantee-preservation to ORKA without a vendor citation (see `outputs/reports/wiki-validation-2026-05-15.md` and `outputs/reports/wiki-validation-2026-05-18-orka-guarantees.md`).
 

@@ -8,7 +8,7 @@ sources:
   - https://cwiki.apache.org/confluence/display/KAFKA/KIP-447:+Producer+scalability+for+exactly+once+semantics
   - https://cwiki.apache.org/confluence/display/KAFKA/KIP-679:+Producer+will+enable+the+strongest+delivery+guarantee+by+default
   - https://flink.apache.org/2018/02/28/an-overview-of-end-to-end-exactly-once-processing-in-apache-flink-with-apache-kafka-too/
-related: [concepts/consumer-group-rebalancing, concepts/consumer-lag-monitoring, patterns/fsi-exactly-once, concepts/flink-checkpointing]
+related: [concepts/consumer-group-rebalancing, concepts/consumer-lag-monitoring, patterns/fsi-exactly-once, concepts/flink-checkpointing, patterns/transactional-outbox, patterns/saga-process-manager, patterns/event-handler-substrate-selection, concepts/queues-for-kafka-share-groups]
 confidence: medium
 last_updated: 2026-04-11
 last_validated: 2026-04-28
@@ -159,7 +159,7 @@ Kafka Streams wraps the consume-process-produce loop in a Kafka transaction, ens
 
 ### Flink EOS with Kafka
 
-Flink achieves end-to-end exactly-once with Kafka by coupling its checkpointing mechanism with Kafka's transactional API through a two-phase commit protocol. See also [concepts/flink-checkpointing.md](concepts/flink-checkpointing.md).
+Flink achieves end-to-end exactly-once with Kafka by coupling its checkpointing mechanism with Kafka's transactional API through a two-phase commit protocol. See also [Flink Checkpointing](flink-checkpointing.md).
 
 #### Two-phase commit protocol
 
@@ -209,9 +209,34 @@ Key factors:
 
 **Kafka-internal scope only.** EOS applies to the Kafka-to-Kafka path: produce, consume, produce. It does not extend to external systems. For end-to-end exactly-once with databases, APIs, or file systems, use:
 
-- **Outbox pattern**: Write to a database and outbox table in the same DB transaction; CDC publishes outbox events to Kafka.
+- **Outbox pattern**: Write to a database and outbox table in the same DB transaction; CDC publishes outbox events to Kafka. See [Transactional Outbox and CDC Ingress](../patterns/transactional-outbox.md).
 - **Idempotent consumers**: Design downstream systems to handle duplicates via idempotency keys or upserts.
-- **Saga pattern**: Orchestrate compensating transactions across services.
+- **Saga pattern**: Orchestrate compensating transactions across services. See [Saga / Process Manager](../patterns/saga-process-manager.md).
+
+> **Say it out loud when designing:** *any effect on an external system is at-least-once, always, regardless of what `processing.guarantee` is set to.* A handler that calls a payment API, writes to a database, or sends a notification has an effect outside the transaction. The transaction can be aborted; the payment cannot. This is the single most common EOS misconception, and no configuration change addresses it — only an idempotent effect does.
+
+### Choosing a delivery guarantee
+
+At-least-once plus an idempotent sink beats EOS for most handlers, and costs less. EOS is a latency and throughput tax (transaction coordination, extra round trips, `read_committed` LSO waits) — pay it where money moves, not uniformly.
+
+```mermaid
+flowchart TD
+  A[New handler] --> B{Sink idempotent<br/>or has natural dedup key?}
+  B -->|Yes| C[At-least-once<br/>+ idempotent write]
+  B -->|No| S{Is the effect inside Kafka?<br/><i>read-process-write, one cluster</i>}
+  S -->|"No — external system"| H["At-least-once<br/>+ explicit dedup store<br/><b>EOS cannot cross this boundary</b>"]
+  S -->|Yes| D{Handler owns durable state<br/><i>or</i> duplicate visible to<br/>a customer or ledger?}
+  D -->|Yes| F["Transactional EOS<br/>processing.guarantee = exactly_once_v2"]
+  D -->|No| C
+  C --> Z[Record the choice in<br/>the service manifest]
+  F --> Z
+  H --> Z
+  style H fill:#FDF3DC,stroke:#F2A900,color:#173A6C
+```
+
+**Record the choice per handler in the service manifest.** A delivery guarantee that lives only in someone's memory is not a guarantee — and in regulated contexts it is an audit finding. State it in the terms a reviewer uses ("no duplicate postings to the ledger"), not only as a config value. See [FSI Exactly-Once](../patterns/fsi-exactly-once.md).
+
+**Share groups have no EOS path at all** — acknowledgement is per record and at-least-once only. Where a share group is the substrate, an idempotent handler is a precondition, not an optimisation. See [Queues for Kafka (Share Groups)](queues-for-kafka-share-groups.md) and [Event Handler Substrate Selection](../patterns/event-handler-substrate-selection.md).
 
 **Transaction timeout edge cases:**
 
@@ -228,8 +253,11 @@ Key factors:
 
 ## Related
 
-- [Consumer Group Rebalancing](concepts/consumer-group-rebalancing.md) -- rebalance behavior during transactions, v1 vs v2 implications
-- [Consumer Lag Monitoring](concepts/consumer-lag-monitoring.md) -- LSO-based lag under `read_committed`
-- [FSI Exactly-Once Pattern](patterns/fsi-exactly-once.md) -- regulatory reporting and audit requirements for EOS in financial services
-- [Flink Checkpointing](concepts/flink-checkpointing.md) -- checkpoint mechanics underlying Flink's two-phase commit with Kafka
-- [Producer Batching Config](concepts/producer-batching-config.md) -- batching and `max.in.flight.requests.per.connection` interaction with idempotence
+- [Consumer Group Rebalancing](consumer-group-rebalancing.md) -- rebalance behavior during transactions, v1 vs v2 implications
+- [Consumer Lag Monitoring](consumer-lag-monitoring.md) -- LSO-based lag under `read_committed`
+- [FSI Exactly-Once Pattern](../patterns/fsi-exactly-once.md) -- regulatory reporting and audit requirements for EOS in financial services
+- [Transactional Outbox and CDC Ingress](../patterns/transactional-outbox.md) -- the outbox as the answer to the external-effect boundary
+- [Saga / Process Manager](../patterns/saga-process-manager.md) -- compensating transactions where the effects span services
+- [Event Handler Substrate Selection](../patterns/event-handler-substrate-selection.md) -- effect location constrains which substrates can offer EOS at all
+- [Flink Checkpointing](flink-checkpointing.md) -- checkpoint mechanics underlying Flink's two-phase commit with Kafka
+- [Producer Batching Config](producer-batching-config.md) -- batching and `max.in.flight.requests.per.connection` interaction with idempotence
