@@ -12,11 +12,13 @@ Algorithm:
      `git rev-parse HEAD:<submodule_path>`.
   2. Fetch upstream HEAD via `git -C <submodule_path> ls-remote <remote> <branch>`.
   3. If SHAs match → EXIT_OK (early return, no timestamp resolution needed).
-  4. If SHAs differ → resolve upstream commit timestamp via
-     `git -C <submodule_path> log -1 --format=%ct <upstream_sha>` and compare
-     against current epoch.
-     - delta ≤ DRIFT_WINDOW_DAYS → EXIT_OK (within window — drift is normal,
-       not stale).
+  4. If SHAs differ → resolve BOTH commit timestamps via
+     `git -C <submodule_path> log -1 --format=%ct <sha>` and compute
+     delta = upstream_ts - committed_ts (how far the pointer lags upstream).
+     - delta ≤ 0 → EXIT_OK (pointer is newer than upstream HEAD, e.g. pinned
+       to a feature branch built on top of main — cannot be stale).
+     - 0 < delta ≤ DRIFT_WINDOW_DAYS → EXIT_OK (within window — drift is
+       normal, not stale).
      - delta > DRIFT_WINDOW_DAYS → EXIT_DRIFT with remediation message
        containing the literal command sequence:
          git submodule update --remote raw/repos/fsi-dsp
@@ -26,8 +28,14 @@ Algorithm:
 Used by .github/workflows/submodule-drift.yml as the CI gate. Triggers on
 PR + push:main, path-scoped to raw/repos/fsi-dsp + this script + the workflow.
 
+History: until 2026-10-07 step 4 computed `now - upstream_ts`, i.e. how long
+since upstream main last moved. That measures upstream's quietness, not the
+pointer's lag, and produced a false STALE (134 days) when the pointer was
+four commits AHEAD of an upstream main that had been idle since May. The
+pointer's own commit timestamp is now part of the comparison.
+
 Exit codes (mirrors H.3b):
-  0 = within drift window (or SHAs equal — fresh pointer)
+  0 = within drift window (or SHAs equal — fresh pointer; or pointer ahead)
   1 = stale (>14 days behind upstream main) — CI fails with remediation
   2 = config error (submodule not registered in parent repo)
   3 = transient error (git ls-remote failed, timestamp unresolvable) —
@@ -38,7 +46,6 @@ from __future__ import annotations
 import argparse
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -138,7 +145,6 @@ def check_drift(
     upstream_remote: str = UPSTREAM_REMOTE,
     upstream_branch: str = UPSTREAM_BRANCH,
     drift_window_days: int = DRIFT_WINDOW_DAYS,
-    now_epoch: "int | None" = None,
 ) -> "tuple[int, str]":
     """Check whether the submodule pointer is stale.
 
@@ -146,8 +152,8 @@ def check_drift(
       submodule_path: Repo-relative path to the submodule (default raw/repos/fsi-dsp).
       upstream_remote: Submodule remote name (default 'origin').
       upstream_branch: Upstream branch to compare against (default 'main').
-      drift_window_days: Days behind upstream HEAD before exit is EXIT_DRIFT.
-      now_epoch: Unix epoch for "now"; defaults to time.time(). Injectable for tests.
+      drift_window_days: Days the pointer's commit may lag upstream HEAD's
+        commit before exit is EXIT_DRIFT.
 
     Returns:
       (exit_code, human_readable_message) — never raises. Translates all
@@ -185,8 +191,10 @@ def check_drift(
             f"HEAD ({committed_sha[:12]})",
         )
 
-    # Step 4: SHAs differ. Resolve the upstream commit timestamp to compute
-    # how far behind the committed pointer is.
+    # Step 4: SHAs differ. Resolve both commit timestamps and compute how far
+    # the committed pointer lags upstream HEAD. Drift is a property of the
+    # pointer relative to upstream; "now" plays no part (a quiet upstream is
+    # not drift, and a pointer newer than upstream cannot be stale).
     try:
         upstream_ts = _git_show_timestamp(submodule_path, upstream_sha)
     except subprocess.CalledProcessError as e:
@@ -195,9 +203,23 @@ def check_drift(
             f"could not resolve upstream commit timestamp for {upstream_sha[:12]} "
             f"(git log failed: {e.stderr.strip() if e.stderr else e})",
         )
+    try:
+        committed_ts = _git_show_timestamp(submodule_path, committed_sha)
+    except subprocess.CalledProcessError as e:
+        return (
+            EXIT_TRANSIENT_ERR,
+            f"could not resolve committed pointer timestamp for {committed_sha[:12]} "
+            f"(git log failed: {e.stderr.strip() if e.stderr else e})",
+        )
 
-    now_ts = now_epoch if now_epoch is not None else int(time.time())
-    delta_days = (now_ts - upstream_ts) / 86400
+    delta_days = (upstream_ts - committed_ts) / 86400
+
+    if delta_days <= 0:
+        return (
+            EXIT_OK,
+            f"OK: submodule pointer ({committed_sha[:12]}) is {-delta_days:.1f}d ahead of "
+            f"upstream {upstream_remote}/{upstream_branch} HEAD ({upstream_sha[:12]})",
+        )
 
     if delta_days <= drift_window_days:
         return (

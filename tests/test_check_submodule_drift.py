@@ -73,18 +73,19 @@ def test_stale_pointer_beyond_window_returns_drift_with_remediation(monkeypatch)
     committed_sha = "1111111111111111111111111111111111111111"
     upstream_sha = "2222222222222222222222222222222222222222"
 
-    # Pretend "now" is 15 days after upstream HEAD's commit timestamp.
+    # The committed pointer was authored 15 days BEFORE upstream HEAD.
     upstream_ts = 1_700_000_000
-    now_epoch = upstream_ts + (15 * 86400)
+    committed_ts = upstream_ts - (15 * 86400)
+    timestamps = {committed_sha: committed_ts, upstream_sha: upstream_ts}
 
     monkeypatch.setattr(drift_mod, "_git_rev_parse_submodule_sha",
                         lambda submodule_path: committed_sha)
     monkeypatch.setattr(drift_mod, "_git_ls_remote",
                         lambda submodule_path, remote, branch: upstream_sha)
     monkeypatch.setattr(drift_mod, "_git_show_timestamp",
-                        lambda submodule_path, sha: upstream_ts)
+                        lambda submodule_path, sha: timestamps[sha])
 
-    code, msg = drift_mod.check_drift(now_epoch=now_epoch)
+    code, msg = drift_mod.check_drift()
 
     assert code == drift_mod.EXIT_DRIFT, f"expected EXIT_DRIFT; got code={code}, msg={msg}"
     assert "stale" in msg.lower(), f"message must mention 'stale': {msg!r}"
@@ -92,6 +93,66 @@ def test_stale_pointer_beyond_window_returns_drift_with_remediation(monkeypatch)
     assert "git submodule update --remote raw/repos/fsi-dsp" in msg
     assert "git add raw/repos/fsi-dsp" in msg
     assert "git commit" in msg
+
+
+# ---------------------------------------------------------------------------
+# Test 2b: Pointer AHEAD of upstream — SHAs differ, pointer newer → exit OK
+# ---------------------------------------------------------------------------
+def test_pointer_ahead_of_upstream_is_not_stale(monkeypatch):
+    """
+    Regression for the 2026-10-07 false positive: raw/repos/fsi-dsp was pinned
+    to a feature-branch commit four commits AHEAD of upstream main, whose HEAD
+    had not moved in 134 days. The gate measured `now - upstream_ts` (how long
+    since upstream main last moved) and reported STALE. Drift is a property of
+    the pointer relative to upstream, so a pointer newer than upstream HEAD can
+    never be stale.
+    """
+    committed_sha = "1111111111111111111111111111111111111111"
+    upstream_sha = "2222222222222222222222222222222222222222"
+
+    upstream_ts = 1_700_000_000
+    committed_ts = upstream_ts + (134 * 86400)   # pointer is 134 days NEWER
+    timestamps = {committed_sha: committed_ts, upstream_sha: upstream_ts}
+
+    monkeypatch.setattr(drift_mod, "_git_rev_parse_submodule_sha",
+                        lambda submodule_path: committed_sha)
+    monkeypatch.setattr(drift_mod, "_git_ls_remote",
+                        lambda submodule_path, remote, branch: upstream_sha)
+    monkeypatch.setattr(drift_mod, "_git_show_timestamp",
+                        lambda submodule_path, sha: timestamps[sha])
+
+    code, msg = drift_mod.check_drift()
+
+    assert code == drift_mod.EXIT_OK, f"pointer ahead of upstream must pass; got code={code}, msg={msg}"
+    assert "ahead" in msg.lower(), f"message should say the pointer is ahead: {msg!r}"
+
+
+# ---------------------------------------------------------------------------
+# Test 2c: Pointer behind upstream but inside the window → exit OK
+# ---------------------------------------------------------------------------
+def test_pointer_behind_within_window_is_ok(monkeypatch):
+    """
+    A pointer 3 days older than upstream HEAD is normal lag, not drift.
+    Under the old `now - upstream_ts` formula this failed whenever upstream
+    main itself was older than 14 days, regardless of the pointer.
+    """
+    committed_sha = "1111111111111111111111111111111111111111"
+    upstream_sha = "2222222222222222222222222222222222222222"
+
+    upstream_ts = 1_700_000_000
+    committed_ts = upstream_ts - (3 * 86400)
+    timestamps = {committed_sha: committed_ts, upstream_sha: upstream_ts}
+
+    monkeypatch.setattr(drift_mod, "_git_rev_parse_submodule_sha",
+                        lambda submodule_path: committed_sha)
+    monkeypatch.setattr(drift_mod, "_git_ls_remote",
+                        lambda submodule_path, remote, branch: upstream_sha)
+    monkeypatch.setattr(drift_mod, "_git_show_timestamp",
+                        lambda submodule_path, sha: timestamps[sha])
+
+    code, msg = drift_mod.check_drift()
+
+    assert code == drift_mod.EXIT_OK, f"3d behind is within the 14d window; got code={code}, msg={msg}"
 
 
 # ---------------------------------------------------------------------------
