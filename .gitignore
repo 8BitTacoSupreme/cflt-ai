@@ -28,6 +28,17 @@ outputs/**/*.tar.gz
 outputs/**/*.zip
 outputs/**/*.docx
 repomix-output.xml
+repomix.config.json
+
+# Personal working output — drafts and handoffs, not knowledge-base artifacts.
+# outputs/linuxone-demo-patches/ is a format-patch export of commits that live in
+# raw/repos/fsi-dsp (feat/linuxone-demo-cluster-mongo); the submodule is canonical.
+outputs/emails/
+outputs/plans/
+outputs/linuxone-demo-patches/
+
+# Local tool state (Serena language-server config) — per-machine, not shared.
+.serena/
 
 # Client/engagement canon silos are NEVER committed to the shared repo. They live in
 # a private overlay repo loaded via CFLT_CANON_EXTERNAL_PATH (see CONTRIBUTING.md).
