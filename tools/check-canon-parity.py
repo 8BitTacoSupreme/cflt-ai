@@ -51,6 +51,9 @@ MODULE_TO_CANON_KEY = {
     "module/db_connector": "connector_config",
     "module/lakehouse_sink": "lakehouse_sink_config",
     "module/tableflow": "tableflow_config",
+    # fsi-dsp PR #2: Basic-tier CC cluster provisioner. cluster_design also governs future
+    # cc-cluster-* tier siblings.
+    "module/cc-cluster-basic": "cluster_design",
     "accelerator/confluent-on-linuxone:01-rbac": "fsi.security.mds-rbac",
     "accelerator/confluent-on-linuxone:02-tls": "fsi.security.tls-fips",
     "accelerator/confluent-on-linuxone:03-schema-governance": "fsi.schema.compatibility-full-transitive",

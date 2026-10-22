@@ -205,6 +205,12 @@ class TestParityScript:
         assert MODULE_TO_CANON_KEY["module/topic"] == "topic_design"
         assert MODULE_TO_CANON_KEY["module/flink"] == "flink_sql"
 
+    def test_cc_cluster_basic_maps_to_cluster_design(self):
+        """module/cc-cluster-basic (fsi-dsp PR #2) is governed by the cluster_design canon key."""
+        assert MODULE_TO_CANON_KEY.get("module/cc-cluster-basic") == "cluster_design"
+        defaults_path = PROJECT_ROOT / "canon" / "base" / "defaults.yaml"
+        assert "cluster_design" in yaml.safe_load(defaults_path.read_text())
+
     def test_module_to_canon_key_contains_accelerator_layers(self):
         """MODULE_TO_CANON_KEY includes all 5 accelerator/confluent-on-linuxone composite entries (Phase 11)."""
         assert len(MODULE_TO_CANON_KEY) >= 7, (

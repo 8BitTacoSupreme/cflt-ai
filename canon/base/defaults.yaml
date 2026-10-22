@@ -68,3 +68,11 @@ tableflow_config:
   storage_format: "ICEBERG"                  # ADR-011 default; Delta acceptable for Databricks-only stack
   catalog_target: "none"                     # Production must explicitly pick: databricks_unity | snowflake_open
   scope_required: "cc_managed_only"          # Tableflow is CC-only; on-prem fallback is DB-C/SF-A sink connectors
+
+# Confluent Cloud cluster provisioning defaults (governs fsi-dsp module/cc-cluster-basic;
+# future cc-cluster-* tier modules map here too). Sources: docs.confluent.io cluster-types
+# + resilience; confluentinc/confluent provider confluent_kafka_cluster docs.
+cluster_design:
+  production_availability: "multi-zone"      # RF 3 / min ISR 2 across 3 AZs = zero RPO on one AZ loss; provider value MULTI_ZONE (Dedicated) or HIGH (Enterprise/Freight)
+  basic_tier_scope: "smoke_dev_only"         # Confluent positions Basic for dev/test: 99.5% SLA only, cannot be a Cluster Linking destination
+  deletion_protection: true                  # Provider recommends lifecycle prevent_destroy on production clusters
