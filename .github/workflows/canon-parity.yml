@@ -2,9 +2,11 @@ name: Canon Parity
 
 # Trigger on any PR that touches:
 # - canon/ configs (cflt-ai canon changes)
-# - raw/repos/fsi-dsp/** (fsi-dsp submodule pointer updates — covers both repos without
-#   duplicating this workflow in fsi-dsp, which would require duplicating canon/ context there)
-# - the parity script itself
+# - raw/repos/fsi-dsp (fsi-dsp submodule pointer updates — covers both repos without
+#   duplicating this workflow in fsi-dsp, which would require duplicating canon/ context there).
+#   Bare path, not raw/repos/fsi-dsp/**: a pointer bump changes only the gitlink entry, so
+#   the /** form never matched and pointer-only bumps (5ba4b4b, 74ece87) skipped this gate.
+# - the parity script itself, and this workflow file
 #
 # main is pushed to directly on this repo, so a pull_request-only trigger would
 # never fire. Mirror the same path filter on push.
@@ -12,15 +14,17 @@ on:
   pull_request:
     paths:
       - 'canon/**'
-      - 'raw/repos/fsi-dsp/**'
+      - 'raw/repos/fsi-dsp'
       - 'tools/check-canon-parity.py'
+      - '.github/workflows/canon-parity.yml'
   push:
     branches:
       - main
     paths:
       - 'canon/**'
-      - 'raw/repos/fsi-dsp/**'
+      - 'raw/repos/fsi-dsp'
       - 'tools/check-canon-parity.py'
+      - '.github/workflows/canon-parity.yml'
 
 jobs:
   check-parity:
