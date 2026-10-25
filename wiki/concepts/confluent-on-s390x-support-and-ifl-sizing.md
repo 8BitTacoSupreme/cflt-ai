@@ -4,8 +4,8 @@ tags: [linuxone ibm s390x confluent-platform cfk flink sizing ifl smt capacity-p
 sources: [outputs/reports/confluent-on-linuxone-ifl-bill-of-materials.md]
 related: [concepts/linuxone-platform-foundations, concepts/linuxone-kafka-integration, patterns/linuxone-on-cfk-reference-architecture, concepts/fips-at-install-ocp-requirement, concepts/s390x-custom-image-build-pipeline, patterns/x86-to-linuxone-cluster-linking-migration]
 confidence: high
-last_updated: 2026-07-09
-last_validated: 2026-07-09
+last_updated: 2026-10-25
+last_validated: 2026-10-25
 ---
 
 # Confluent on s390x — Support Matrix and IFL Sizing
@@ -39,8 +39,8 @@ Three things that are easy to get wrong:
 
 Every item in that column is a **CP-layer statement, not a platform statement.** s390x, RHEL, and OpenShift support IPv6, FIPS, and native libraries perfectly well; the claim is about Confluent Platform's s390x build. Two consequences:
 
-- **The list moves, and the public matrix lags actual state.** Treat these as posture items to confirm with the vendor at engagement kickoff, not as immutable design constraints. Record the answers in a BOM; that record — not a docs page — becomes the source of truth for a given deployment.
-- **`FIPS mode` in particular needs decomposing.** The OS layer is *validated on Z*: RHEL 9's FIPS 140-3 modules were tested on IBM z16 as a certified operational environment. CP FIPS mode is BC-FIPS — a pure-Java provider — so enabling it on Z is configuration and certification sequencing, not architecture. Separately, OCP must be installed with `fips: true`; post-install conversion is unsupported ([FIPS-at-install OCP Requirement](fips-at-install-ocp-requirement.md)).
+- **Design to the published matrix, and re-check it at kickoff.** The list moves as Confluent adds s390x capabilities. A vendor statement that contradicts the matrix must be in writing and recorded in the BOM before it changes a design; until then the docs page is the source of truth.
+- **`FIPS mode` means CP FIPS mode, and it is not yet supported on s390x** (re-checked 2026-10-25 against the 8.3 docs). Until Confluent lists it, a tier whose policy requires FIPS 140 validated crypto on the brokers runs its brokers on x86/ARM. RHEL 9's FIPS modules being validated on z16 does not change that: OS/JDK FIPS modes on s390x are outside Confluent's s390x support statement, so they are neither a substitute for CP FIPS mode nor a configuration this wiki claims works with CP. mTLS, TLS 1.2/1.3 and CPACF acceleration are unaffected. (On x86/ARM OCP, CP FIPS mode additionally needs a FIPS-at-install cluster — [FIPS-at-install OCP Requirement](fips-at-install-ocp-requirement.md).)
 - **Native-library connectors are a runtime fact, not a support-matrix fact.** An s390x image manifest is necessary but not sufficient — a connector can ship a valid s390x image and still shell out to an x86-only native lib. Audit each connector in scope. Pure-Java connectors (Mongo, Debezium) are unaffected.
 
 ### IFLs vs. vCPUs vs. Pods
@@ -157,6 +157,6 @@ Note also that **Topology Manager aligns to NUMA nodes, not to chips.** On s390x
 - [LinuxONE Platform Foundations](linuxone-platform-foundations.md) — SMT, CBU, Telum cache fabric, and the L1-specific substrate this sizing sits on
 - [LinuxONE Kafka Integration](linuxone-kafka-integration.md) — the z/OS offload bridge pattern (Connect on z/OS, IBM MQ Source Connector)
 - [LinuxONE on CFK Reference Architecture](../patterns/linuxone-on-cfk-reference-architecture.md) — the deployable CFK layering this sizing provisions for
-- [FIPS-at-install OCP Requirement](fips-at-install-ocp-requirement.md) — why `fips.enabled: true` on a CFK CR is a no-op without a FIPS-mode OCP install
+- [FIPS-at-install OCP Requirement](fips-at-install-ocp-requirement.md) — OCP FIPS-at-install (x86/ARM), and why the LinuxONE accelerator does not set CP FIPS mode on s390x
 - [s390x Custom Image Build Pipeline](s390x-custom-image-build-pipeline.md) — every image needs an s390x manifest; the CI gate that enforces it
 - [x86 → LinuxONE Cluster Linking Migration](../patterns/x86-to-linuxone-cluster-linking-migration.md) — moving an existing cluster onto Z

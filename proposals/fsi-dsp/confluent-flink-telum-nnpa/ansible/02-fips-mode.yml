@@ -12,11 +12,12 @@
 #      kernel argument — retrofitting yields fips_enabled=1 on an unvalidated
 #      boot chain, which is worse than being honestly non-FIPS.
 #
-#   2. CP FIPS mode      — BC-FIPS provider + BCFKS keystores. Pure Java, so it is
-#      configuration and certification sequencing, not architecture. We build the
-#      keystore pipeline in from day one so flipping `fipsmode: true` is a values
-#      change, not a re-architecture. Confirm CP-on-Z status with the IBM/Confluent
-#      partner team at kickoff and record it in the BOM.
+#   2. CP FIPS mode      — NOT YET SUPPORTED ON s390x (CP versions-interoperability,
+#      re-checked 2026-10-25), so it is off: fipsmode: false, and the CRs carry no
+#      FIPS settings. The BCFKS keystore steps below are STAGED ONLY -- nothing in
+#      the CRs uses them -- so turning CP FIPS mode on, once Confluent lists it for
+#      s390x, is a values change, not a re-architecture. OS FIPS (layer 1) is not
+#      CP FIPS mode and is outside Confluent's s390x support statement.
 #
 # The AI inference path is OUTSIDE the FIPS boundary by construction: zDLC/zDNN/
 # NNPA perform no cryptographic functions. Say so in the client doc.
@@ -73,9 +74,11 @@
           OpenSSL is not loading the FIPS provider. MongoDB Enterprise FIPS mode rides this
           provider; so does host/OCP platform crypto. Fix before proceeding.
 
-    # ---- Layer 2: BCFKS keystore material for CP FIPS mode ------------------
+    # ---- Layer 2: BCFKS keystore material for CP FIPS mode (STAGED) ----------
     # CP FIPS mode requires BCFKS (Bouncy Castle FIPS keystore) rather than JKS/PKCS12.
-    # Generated here so `fipsmode: true` in the CFK values is a flip, not a project.
+    # Staged only: CP FIPS mode is not yet supported on s390x, and nothing in the CRs
+    # uses these stores. Generated here so that, once Confluent lists FIPS mode for
+    # s390x, `fipsmode: true` in the CFK values is a flip, not a project.
     - name: Ensure keystore directory exists
       ansible.builtin.file:
         path: "{{ bcfks_dir }}"

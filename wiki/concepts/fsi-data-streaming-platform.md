@@ -4,7 +4,7 @@ tags: [kafka fsi confluent-cloud confluent-platform cfk]
 sources: [fsi-dsp://scenario/cc-aws, fsi-dsp://module/topic]
 related: [concepts/sla-tiers, concepts/schema-evolution-strategies, concepts/fsi-compliance, patterns/fsi-governance-automation, patterns/dr-cluster-linking, patterns/dr-mirrormaker2, patterns/dr-multi-region-cluster, patterns/topic-naming]
 confidence: high
-last_updated: 2026-04-11
+last_updated: 2026-10-25
 last_validated: 2026-04-28
 ---
 
@@ -58,7 +58,7 @@ Working producer/consumer implementations in Java 17, .NET, and Python. All foll
 - RBAC: CC role bindings (Terraform), CFK ACLs + MDS (Helm), CP MDS (Ansible)
 - Encryption: mTLS across all deployment models, cert-manager for CFK
 - Secrets: Vault, Azure Key Vault, AWS Secrets Manager, Google Secret Manager
-- FIPS 140-2: Automated validation for CP on RHEL and CFK on FIPS-enabled OpenShift
+- FIPS 140-2: Automated validation for CP on RHEL and CFK on FIPS-enabled OpenShift (x86/ARM; CP FIPS mode is not yet supported on s390x)
 - Authentication: OAuth/OAUTHBEARER primary for CC; LDAP/MDS for CP/CFK (see ADR-006)
 
 ### CI/CD

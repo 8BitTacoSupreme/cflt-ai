@@ -11,10 +11,11 @@ sources:
   - https://www.ibm.com/support/pages/node/7262649
 related: [concepts/linuxone-kafka-integration, concepts/linuxone-platform-foundations, concepts/sla-tiers, concepts/fsi-compliance, patterns/linuxone-kafka-tuning, patterns/linuxone-flink-validation-tuning, patterns/aks-kafka-tuning]
 confidence: medium
-last_updated: 2026-05-07
+last_updated: 2026-10-25
 last_validated: 2026-05-07
 validated_via: [confluent-docs (versions-interoperability.html, producer-configs.html, tiered-storage.html), context7 (/websites/javadoc_io_doc_org_apache_kafka_kafka-clients_4_2_0)]
 changelog:
+  - 2026-10-25 (rev 3) — Corrected FIPS: CP FIPS mode is not yet supported on s390x (versions-interoperability, 8.3 docs). The L1 FIPS 140-3/BCFIPS validation step is withdrawn; §5.4 now measures TLS throughput.
   - 2026-05-07 (rev 2) — Peer-review pass. Removed fabricated commands (`lscrypt`, `setsebool kafka_crypto_offload`, `kafka-storage.sh format --recover`, `kafka-tier-storage-tool`, `-Dcom.ibm.crypto.provider.useIBMJCE`). Replaced with real equivalents. Corrected KIP reference (KIP-858, not KIP-589/963). Reworded GC-pause and Telum II co-residency wording.
 ---
 
@@ -44,12 +45,12 @@ All topologies run **KRaft mode** (Confluent Platform 8.0+ requires it; ZooKeepe
 
 - **Cluster size:** 3 brokers + 3 dedicated KRaft controllers minimum. For partition scale tests, jump to 6+6.
 - **Security profile:** mTLS broker↔broker, mTLS broker↔client, OAUTHBEARER for principals (matches ADR-006). Validate with a **Kerberos overlay** test only if integrating with legacy MDS/AD — otherwise skip; Kerberos is no longer the FSI default.
-- **FIPS:** RHEL 9 FIPS mode + Crypto Express 8S (CEX8S) hardware crypto. Validate FIPS 140-3 (the 140-2 standard sunset by NIST in 2026; CEX8S supports 140-3). Confirm `update-crypto-policies --set FIPS:OSPP` and that the JVM uses the Bouncy Castle FIPS provider.
+- **FIPS:** Confluent Platform FIPS mode is not yet supported on s390x (CP versions-interoperability, re-checked 2026-10-25), so do not run a CP-FIPS validation on L1. A tier whose policy requires FIPS 140 validated broker crypto is validated on x86/ARM brokers instead. OS/JDK FIPS modes on s390x (RHEL `fips=1`, Semeru `IBMJCEPlusFIPS`) are outside Confluent's s390x support statement; this plan makes no claim that they work or break with CP.
 - **Validation gates:** before declaring install complete, all of:
   - `kafka-cluster.sh cluster-id` returns identical UUID on every broker
   - `kafka-metadata-quorum.sh describe --status` shows all 3 controllers in the voter set, no observer drift
   - `kafka-features.sh describe` shows `metadata.version` at the cluster's negotiated KRaft level
-  - mTLS handshake succeeds via `openssl s_client` with FIPS-only cipher suite (`TLS_AES_256_GCM_SHA384`)
+  - mTLS handshake succeeds via `openssl s_client` with `TLS_AES_256_GCM_SHA384` (TLS 1.3)
   - OAUTHBEARER token introspection round-trip < 50 ms
 
 **Rolling upgrades** under load: drive 50% of throughput target via `kafka-producer-perf-test` while bouncing one broker at a time. URPs and OOSR must return to zero within 60 s of each restart. Use Ansible with `serial: 1` and a `wait_for` on `UnderReplicatedPartitions` JMX gauge.
@@ -150,11 +151,11 @@ SMC-D (Shared Memory Communications - Direct) is z/Linux's userspace shortcut fo
 | HiperSockets | < 800 µs | ~ 4 GB/s ceiling |
 | OSA-Express7S 25 GbE | 2–5 ms | line rate |
 
-##### Crypto Express FIPS Throughput
+##### Crypto Express / CPACF TLS Throughput
 - mTLS-only listeners. CEX offload routing is determined by the **JCE provider chain** in the JVM and the OS-level crypto policy — not by an SELinux boolean. To activate IBM JCE (only available on IBM Semeru / OpenJ9 — not on Confluent's supported JDK list; see [LinuxONE Kafka Tuning § JDK posture](linuxone-kafka-tuning.md)):
   - Edit `$JAVA_HOME/conf/security/java.security` to list `com.ibm.crypto.provider.IBMJCE` (or `IBMJCEPlus` for newer SDKs) above the default JCE provider, OR
   - Programmatic `Security.insertProviderAt(new com.ibm.crypto.provider.IBMJCE(), 1)`.
-- For Confluent-supported JDKs (OpenJDK 21 / Zulu / Oracle), use `BCFIPS` provider plus `update-crypto-policies --set FIPS:OSPP` for FIPS 140-3 mode; CEX8S offload still works via the OS crypto policy path.
+- With Confluent-supported JDKs (Temurin / OpenJDK 21 / Zulu / Oracle), CEX8S offload still works via the OS crypto policy path. This measures TLS throughput, not a FIPS mode: CP FIPS mode is not yet supported on s390x.
 - Run sustained 1 GB/s producer load over mTLS for 30 minutes.
 - Monitor with `lszcrypt -VV` (note: command is `lszcrypt`, part of `s390-tools`; the older `-V`/`-VV`/`-VVV` flags control verbosity). The verbose output shows columns CARD.DOM, TYPE, MODE, STATUS, REQUESTS, **PENDING**, HWTYPE, **QDEPTH**, FUNCTIONS, DRIVER. Saturation as a single-read percentage is meaningless — sample over time and watch **PENDING / QDEPTH ratio**: sustained > 0.5 indicates contention. Mitigate by adding a CEX domain/adapter, or reduce TLS handshake frequency via long-lived connections (`connections.max.idle.ms` higher, keepalive on).
 

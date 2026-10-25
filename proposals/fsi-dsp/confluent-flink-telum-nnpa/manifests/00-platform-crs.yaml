@@ -76,14 +76,13 @@ spec:
       - unclean.leader.election.enable=false
       - auto.create.topics.enable=false
 
-      # ---- CP FIPS mode -------------------------------------------------
-      # BC-FIPS provider + BCFKS keystores (staged by ansible/02-fips-mode.yml).
-      # CPACF makes FIPS-mode TLS on Z cost nearly nothing — fold into the cost story.
-      - enable.fips=true
-      - ssl.provider=BCFIPS
-      - ssl.keystore.type=BCFKS
-      - ssl.truststore.type=BCFKS
-      # Restrict listeners to FIPS-approved protocol versions and cipher suites.
+      # ---- CP FIPS mode: OFF -----------------------------------------------
+      # Not yet supported on s390x (CP versions-interoperability, re-checked
+      # 2026-10-25). When Confluent lists it, CP FIPS mode is enable.fips=true,
+      # enable.fips.mode=fips-140-3 (the CP 8.2+ default), the BC-FIPS
+      # security.providers creator, and the BCFKS stores staged by
+      # ansible/02-fips-mode.yml (CP security compliance docs).
+      # Restrict listeners to TLS 1.3/1.2 and AES-GCM cipher suites.
       # NOTE: RHEL 9 FIPS mode enforces TLS 1.2 Extended Master Secret (RFC 7627).
       # Clients lacking EMS or TLS 1.3 will fail to connect — audit the fleet first.
       - ssl.enabled.protocols=TLSv1.3,TLSv1.2

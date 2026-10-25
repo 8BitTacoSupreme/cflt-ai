@@ -38,13 +38,15 @@ support all of these; the claim is about Confluent Platform's s390x build.
 
 Per the runbook's Phase 2/6.5 reasoning — the public matrix lags actual state, this POC runs
 directly with the IBM/Confluent partner team, and CP is entitled as **IBM Confluent Platform
-for Z and LinuxONE** (GA 2026-03-17) — none of these are treated as design-time blockers.
-They are **recorded posture items, confirmed at kickoff** and captured in the BOM (§9 of the
-runbook). The artifacts here reflect that:
+for Z and LinuxONE** (GA 2026-03-17) — IPv6, the USM Agent and native-lib connectors are not
+treated as design-time blockers. They are **recorded posture items, confirmed at kickoff** and
+captured in the BOM (§9 of the runbook). **FIPS mode is the exception** (decided 2026-10-25): it
+stays off until the published matrix lists it for s390x, and a contrary vendor statement must be
+in writing and in the BOM before it changes the design. The artifacts here reflect that:
 
 | Item | Posture | Where it lands |
 |---|---|---|
-| **FIPS mode** | **Supported and enabled.** OS FIPS is validated *on z16* (RHEL 9 modules tested on z16 as a certified operational environment). CP FIPS mode is BC-FIPS — pure Java; enabling on Z is configuration + certification sequencing, not architecture. | `ansible/02-fips-mode.yml`, `helm/cfk-operator-values.yaml` (`fipsmode: true`), BCFKS keystore pipeline |
+| **FIPS mode** | **Not yet supported on s390x (published matrix, re-checked 2026-10-25); not enabled.** OS FIPS is validated *on z16* (RHEL 9 modules tested on z16 as a certified operational environment), but that is not CP FIPS mode, and OS/JDK FIPS on s390x is outside Confluent's s390x support statement. A tier whose policy requires FIPS 140 validated broker crypto runs its brokers on x86/ARM until Confluent lists FIPS mode for s390x. The BCFKS keystore pipeline stays staged, so turning CP FIPS mode on then is a values change. | `helm/cfk-operator-values.yaml` (`fipsmode: false`), `manifests/00-platform-crs.yaml` (no FIPS settings), `ansible/02-fips-mode.yml` (OS FIPS verification + staged BCFKS pipeline) |
 | **IPv6** | Demoted to a **recorded posture item**, not a gate. Same doc scope as the FIPS line. Confirm with the partner team; if CP's s390x build lacks IPv6 listener support it surfaces as broker bind failures, not a clean error — so record the cluster network mode either way. | `00-platform-validate.yml` (warn + record) |
 | **Native-lib connectors** | A **runtime fact, not a support-matrix fact.** Connectors in scope (Mongo sink, CDC) are pure-Java and run fine. Audit and record per plugin. | `ci/images.txt` + BOM connector audit row |
 | **Unified Stream Manager Agent** | Not deployed by this accelerator. Values are USMAgent-ready. | — |
@@ -157,13 +159,14 @@ fail to schedule, and the failure reads as a capacity problem rather than an ali
 ansible/    00-platform-validate.yml   fail-fast gate (machine type, NNPA-in-guest, SMT-2,
                                        chip topology, FIPS required, IPv6 recorded)
             01-node-baseline.yml       hugepages, swappiness, XFS, IRQ, chip labelling
-            02-fips-mode.yml           FIPS validation chain + BCFKS keystore pipeline
+            02-fips-mode.yml           OS FIPS validation chain + BCFKS keystore pipeline
+                                       (staged, unused until CP FIPS mode is listed for s390x)
                                        + validation-chain.json (the security-review deliverable)
-helm/       cfk-operator-values.yaml   CFK operator, s390x-gated, fipsmode: true
+helm/       cfk-operator-values.yaml   CFK operator, s390x-gated, fipsmode: false
             cmf-values.yaml            Confluent Manager for Apache Flink
             kube-prometheus-stack-values.yaml
-manifests/  00-platform-crs.yaml       KRaft + Kafka + SR (budgeted CPU, BC-FIPS/BCFKS,
-                                       FIPS-approved ciphers)
+manifests/  00-platform-crs.yaml       KRaft + Kafka + SR (budgeted CPU, TLS 1.3/1.2 AES-GCM
+                                       ciphers; no CP FIPS mode on s390x)
             05-kubeletconfig-cpumanager.yaml   static CPU manager + full-pcpus-only
             10-flink-cmf.yaml          CMFRestClass + FlinkEnvironment
             12-flinkapplication-fraud-scoring.yaml   chip-pinned inference TMs
@@ -192,13 +195,15 @@ Matches the runbook's scorecard. The durable IP is the **zDLC op-coverage CI gat
 attestation** in the SBOM pipeline — together they are what make the Telum claim *provable*
 rather than asserted, and what an FSI model-risk-management review actually asks for.
 
-FIPS is **not** an exception here: the BCFKS keystore pipeline and `fipsmode: true` are built in
-from day one, so flipping CP FIPS mode is a values change rather than a re-architecture.
+FIPS **is** the exception: CP FIPS mode is not yet supported on s390x, so `fipsmode` is false and
+the CRs carry no FIPS settings. The BCFKS keystore pipeline is staged in `02-fips-mode.yml`, so
+turning CP FIPS mode on once Confluent lists it is a values change rather than a re-architecture.
 
 ## 4. Open items before benchmarking
 
 1. **Partner-team confirmation** of CP-on-Z status for: CP FIPS mode, IPv6 listeners, USM Agent.
-   Record answers in the BOM — that table, not the public matrix, is the source of truth.
+   Record answers in the BOM. CP FIPS mode stays off until the published matrix lists it for
+   s390x; a written support exception recorded in the BOM is the only other way to turn it on.
 2. **TLS 1.2 EMS (RFC 7627) client-fleet audit.** RHEL 9 FIPS mode enforces Extended Master Secret;
    legacy clients without EMS or TLS 1.3 cannot connect. The first symptom is mystery producer
    connection failures. Audit *before* enabling FIPS mode.

@@ -10,7 +10,7 @@ sources:
   - https://www.ibm.com/products/unified-key-orchestrator
 related: [concepts/linuxone-kafka-integration, concepts/fsi-compliance, concepts/fsi-data-streaming-platform, patterns/linuxone-validation-suite, patterns/linuxone-kafka-tuning, patterns/linuxone-flink-validation-tuning, patterns/fsi-l1-reference-architecture]
 confidence: medium
-last_updated: 2026-05-07
+last_updated: 2026-10-25
 last_validated: 2026-05-07
 ---
 
@@ -82,7 +82,7 @@ SMC-R provides the same TCP-stack-bypass advantage as SMC-D, but works across th
 
 ### Unified Key Orchestrator (UKO) and Key Lifecycle
 
-The crypto-algorithm story (FIPS 140-3 via CEX8S, BCFIPS provider) covers *how* data is encrypted but says nothing about **where keys live** and **how they rotate**. For an FSI audit, the key lifecycle question is mandatory.
+The crypto-algorithm story (CPACF/CEX8S acceleration, TLS 1.3/mTLS; CP FIPS mode is not yet supported on s390x) covers *how* data is encrypted but says nothing about **where keys live** and **how they rotate**. For an FSI audit, the key lifecycle question is mandatory.
 
 **On-frame:**
 
@@ -142,7 +142,7 @@ A single place where the four LinuxONE pattern docs anchor performance claims. U
 | Up to 450B inference operations/day with sub-ms response times | IBM Telum II announcement (Hot Chips 2024 / GA 2025) | Anchors §4.4 Latency Budget in [Flink Validation & Tuning](../patterns/linuxone-flink-validation-tuning.md) |
 | HiperSockets latency floor (~800 µs p99 for 1 KB) | IBM HiperSockets technical white papers | Cited in [Validation Suite §5.4 HiperSockets Latency Floor](../patterns/linuxone-validation-suite.md) |
 | SMC-D / SMC-R latency advantage | IBM SMC technical references | Cited in [Kafka Tuning § LinuxONE Overlay](../patterns/linuxone-kafka-tuning.md) |
-| CEX8S throughput sustaining mTLS workloads | IBM Crypto Express 8S product brief | Cited in [Validation Suite §5.4 Crypto Express FIPS Throughput](../patterns/linuxone-validation-suite.md) |
+| CEX8S throughput sustaining mTLS workloads | IBM Crypto Express 8S product brief | Cited in [Validation Suite §5.4 Crypto Express / CPACF TLS Throughput](../patterns/linuxone-validation-suite.md) |
 
 > **Action for the Practice:** IBM publishes Emperor 5 fraud-detection benchmark results, HiperSockets latency white papers, and CEX8S throughput data — pin specific URLs and document versions here as they become available rather than relying on directional citations.
 

@@ -10,10 +10,11 @@ sources:
   - https://www.ibm.com/docs/en/linux-on-systems
 related: [concepts/producer-batching-config, concepts/sla-tiers, concepts/linuxone-kafka-integration, concepts/linuxone-platform-foundations, patterns/linuxone-validation-suite, patterns/aks-kafka-tuning, patterns/fsi-exactly-once]
 confidence: medium
-last_updated: 2026-05-07
+last_updated: 2026-10-25
 last_validated: 2026-05-07
 validated_via: [confluent-docs (producer-configs.html, consumer-configs.html, versions-interoperability.html, tiered-storage.html), context7 (/websites/javadoc_io_doc_org_apache_kafka_kafka-clients_4_2_0)]
 changelog:
+  - 2026-10-25 (rev 3) — Corrected FIPS: CP FIPS mode is not yet supported on s390x (versions-interoperability, 8.3 docs), so the BCFIPS-on-L1 advice is withdrawn. JDK list now names Eclipse Temurin.
   - 2026-05-07 (rev 2) — Peer-review pass. Replaced fabricated `-Dcom.ibm.crypto.provider.useIBMJCE` and `lscrypt` with real IBM JCE activation mechanism (java.security edit) and `lszcrypt -VV`. Added concrete `smc_run` systemd drop-in. New SMC-R cross-frame subsection. Disambiguated `confluent.tier.feature` vs `confluent.tier.enable`.
 ---
 
@@ -158,10 +159,10 @@ For Kafka traffic that crosses CECs within the same data center — cross-frame 
 - mTLS broker↔broker offloads to CEX8S when the IBM JCE provider is in the JVM provider chain. **There is no system-property switch for this** — activate IBM JCE by either:
   - Editing `$JAVA_HOME/conf/security/java.security` to list `com.ibm.crypto.provider.IBMJCE` (or `IBMJCEPlus` for newer SDKs) above the default JCE provider in the `security.provider.<n>` ordering, or
   - Programmatic `Security.insertProviderAt(new com.ibm.crypto.provider.IBMJCE(), 1)` at startup.
-- For FIPS 140-3 with a Confluent-supported JDK (OpenJDK 21 / Zulu / Oracle), use `BCFIPS` provider for the JVM and `update-crypto-policies --set FIPS:OSPP` at OS level. CEX8S offload still works via the OS crypto policy path even without IBMJCE.
+- **CP FIPS mode is not yet supported on s390x, with any JDK or provider** (CP versions-interoperability, re-checked 2026-10-25). Do not plan a FIPS-mode broker on L1; a tier whose policy requires FIPS 140 validated broker crypto runs its brokers on x86/ARM. CEX8S and CPACF still accelerate TLS.
 - Watch CEX8S contention via `lszcrypt -VV` — verbose output shows columns CARD.DOM, TYPE, MODE, STATUS, REQUESTS, **PENDING**, HWTYPE, **QDEPTH**, FUNCTIONS, DRIVER. Sample over time; sustained PENDING/QDEPTH > 0.5 indicates saturation. Mitigate by adding a CEX domain or adapter, or reduce TLS handshake frequency via long-lived connections.
 
-> **JDK posture (Confluent support).** CP 8.2 lists OpenJDK, Zulu OpenJDK, and Oracle JDK as supported (recommended: Java 21). **IBM Semeru / OpenJ9 is not on the Confluent support list** — using it for IBM JCE access is a deliberate L1 trade-off and a candidate workload for the IBM-bundled support contract. If you need vendor-supported BoringSSL/FIPS without Semeru, use OpenJDK 21 + BCFIPS provider; CEX8S offload still works via the OS crypto policy path, just not via IBMJCE-specific flags.
+> **JDK posture (Confluent support).** CP 8.2 lists Eclipse Temurin, OpenJDK, Zulu OpenJDK, and Oracle JDK as supported (recommended: Java 21). **IBM Semeru / OpenJ9 is not on the Confluent support list** — using it for IBM JCE access is a deliberate L1 trade-off and a candidate workload for the IBM-bundled support contract. With a listed JDK, CEX8S offload still works via the OS crypto policy path, just not via IBMJCE-specific flags.
 
 #### NUMA / z/VM CP Pinning
 - Pin each broker container to a contiguous block of z/VM CPs using `taskset` or systemd `CPUAffinity`.

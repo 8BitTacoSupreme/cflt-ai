@@ -12,7 +12,7 @@ related:
   - concepts/s390x-custom-image-build-pipeline
   - patterns/linuxone-kafka-tuning
 confidence: medium
-last_updated: 2026-05-27
+last_updated: 2026-10-25
 last_validated: 2026-05-27
 ---
 
@@ -42,7 +42,7 @@ That confirms what's actually loaded. Pair it with `-Djavax.net.debug=ssl:handsh
 
 #### FIPS mode
 
-Regulated-FSI L1 LPARs almost certainly have `fips=1` at the OS level and probably FIPS enabled at the JDK level too. This:
+Some regulated-FSI L1 LPARs run RHEL `fips=1` at the OS level, or a Semeru FIPS provider at the JDK level. OS/JDK FIPS modes on s390x are outside Confluent's s390x support statement, and CP FIPS mode itself is not yet supported on s390x (CP versions-interoperability, re-checked 2026-10-25), so treat the notes below as troubleshooting aids, not a supported FIPS path. On such a host, FIPS mode:
 
 - Eliminates non-approved cipher suites
 - Blocks MD5 and some SHA-1 uses
@@ -58,7 +58,7 @@ cat /proc/sys/crypto/fips_enabled        # 1 = OS FIPS on
 java -XshowSettings:properties 2>&1 | grep -i fips
 ```
 
-If the OCP cluster itself wasn't installed in FIPS mode, the CFK `spec.tls.fips.enabled: true` field is a no-op — see [fips-at-install-ocp-requirement](fips-at-install-ocp-requirement.md). FIPS is install-time on OCP; you can't bolt it on later.
+CFK's `spec.tls.fips.enabled` turns on CP FIPS mode, which is not yet supported on s390x: do not set it on s390x CRs. (On x86/ARM OCP it also needs a FIPS-at-install cluster — see [fips-at-install-ocp-requirement](fips-at-install-ocp-requirement.md).)
 
 #### PKCS12 MAC algorithm
 

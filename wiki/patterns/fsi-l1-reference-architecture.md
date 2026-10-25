@@ -10,10 +10,11 @@ sources:
   - https://www.databricks.com/product/data-intelligence-platform
 related: [concepts/fsi-data-streaming-platform, concepts/linuxone-kafka-integration, concepts/linuxone-platform-foundations, concepts/sla-tiers, concepts/fsi-compliance, patterns/linuxone-validation-suite, patterns/linuxone-kafka-tuning, patterns/linuxone-flink-validation-tuning, patterns/dr-cluster-linking, patterns/fsi-exactly-once]
 confidence: medium
-last_updated: 2026-05-07
+last_updated: 2026-10-25
 last_validated: 2026-05-07
 validated_via: [confluent-docs (cloud connectors index, versions-interoperability.html, postgresql cdc v1 EOL page, tiered-storage.html), context7]
 changelog:
+  - 2026-10-25 (rev 5) — Corrected FIPS: CP FIPS mode is not yet supported on s390x (versions-interoperability, 8.3 docs). FIPS-mandated broker tiers run on x86/ARM; the "full FIPS 140-3 footprint" and BCFIPS claims are withdrawn.
   - 2026-05-04 (rev 2) — Replaced Debezium-direct CDC references with Confluent-supported connectors per Confluent Hub: MongoDB Connector for Apache Kafka, PostgreSQL CDC Source V2 (Debezium V1 EOL 2026-03-31), CockroachDB CDC Connector, Neo4j Connector for Confluent. Single-vendor support model under IBM Confluent Platform for Z/LinuxONE bundle.
   - 2026-05-05 (rev 3) — MCP-validated. Tableflow output confirmed as Iceberg AND Delta Lake (not Iceberg only). PostgreSQL CDC V1 EOL date verified at March 31, 2026. CockroachDB integration mechanism clarified (native changefeed; Hub entry exists but is self-managed only — not in CC fully-managed list).
   - 2026-05-07 (rev 4) — Peer-review pass. Topology diagram redrawn to separate KRaft Controller LPAR from Broker LPAR (prior diagram showed combined-mode anti-pattern, contradicting §7). MRC vs Cluster Linking story reconciled: MRC stretches intra-DC for compliance-tier RPO=0 (sub-50 ms RTT requirement); CL is for off-platform analytical mirroring. Added CockroachDB SoR-vs-derived-event RPO footnote, audit-log latency clarification, MRC+CL anti-pattern, and "Why not Debezium-direct" governance hook.
@@ -25,7 +26,7 @@ changelog:
 
 Reference architecture for FSI workloads that pins the **operational data plane** to IBM LinuxONE Emperor 5 — the L1-certified data stores (MongoDB, CockroachDB, PostgreSQL, Redis, Neo4j, Confluent Platform) plus Confluent Manager for Apache Flink — and routes the **analytical plane** off-platform to Databricks via Confluent Cluster Linking. Confluent is the universal nervous system: every state change in every operational store flows as an event onto Kafka, and every analytical workload reads from Kafka or its tiered-storage cold object copy. Telum II provides on-chip AI inference for sub-ms decisioning; Spyre (where present) covers larger model classes. DR is multi-frame Cluster Linking. Off-platform analytics never read directly from L1 stores — they consume the event stream.
 
-> Why this shape: every store named is L1-certified, which means a single hardware footprint with FIPS 140-3, in-frame networking, and shared operational tooling. The analytical plane needs elastic compute and access to non-FSI data (market feeds, vendor enrichment), which Databricks delivers better than any on-frame option. Splitting at the operational/analytical boundary is the natural seam.
+> Why this shape: every store named is L1-certified, which means a single hardware footprint with hardware crypto (CPACF, CEX8S), in-frame networking, and shared operational tooling. One exception: CP FIPS mode is not yet supported on s390x, so a broker tier whose policy mandates FIPS 140 validated crypto runs on x86/ARM, not L1. The analytical plane needs elastic compute and access to non-FSI data (market feeds, vendor enrichment), which Databricks delivers better than any on-frame option. Splitting at the operational/analytical boundary is the natural seam.
 
 ## Pattern
 
@@ -129,7 +130,7 @@ Same Tableflow pattern fans out to additional analytical destinations without re
 
 - **Schema Registry** is the canonical contract; all CDC connectors register Avro/Protobuf schemas; `compatibility.level` per tier.
 - **RBAC** — service accounts per app, never per team; topic prefixes derived from [Topic Naming](topic-naming.md). MDS/RBAC on the L1 cluster; Confluent Cloud RBAC on the analytical mirror.
-- **mTLS + OAUTHBEARER** end-to-end; FIPS 140-3 via CEX8S on L1 and the BCFIPS provider in JVMs.
+- **mTLS + OAUTHBEARER** end-to-end. CP FIPS mode is not yet supported on s390x (CP versions-interoperability, re-checked 2026-10-25): FIPS-mandated broker tiers run on x86/ARM.
 - **Audit log** — the audit consumer reads the **on-frame Confluent audit topic**, NOT the CL mirror in CC, to avoid inheriting CL lag into the security-event pipeline. (A 30-second link lag means a 30-second blind spot for the SOC; compliance reviewers will not accept that.) The SIEM contract is "every denial captured within 30 s" per [LinuxONE Validation Suite §3.2](linuxone-validation-suite.md). Forwarding mechanism is the [Audit Log SIEM Integration](audit-log-siem-integration.md) pattern. CC audit log is a separate, additional feed for CC-side events.
 - **Data residency** — operational data physically stays on the customer's L1 frames; only mirrored topics leave the perimeter. Per-topic mirror policy = governance hook for residency rules (e.g., EU customer data: do not mirror).
 
@@ -157,7 +158,7 @@ Same Tableflow pattern fans out to additional analytical destinations without re
 
 ### 6. Why This Shape Works for FSI
 
-- **One frame, full FIPS 140-3 footprint** — operational data, encryption, decisioning, and DR are all inside the same hardware certification and audit boundary.
+- **One frame** — operational data, encryption, decisioning, and DR are all inside the same hardware and audit boundary. The exception is a tier whose policy mandates FIPS 140 validated broker crypto: CP FIPS mode is not yet supported on s390x.
 - **Sub-ms decisioning** — Telum II in-process inference is unmatched on x86 because the network hop alone breaks the budget.
 - **Vendor positioning** — IBM acquired Confluent (2026); the L1 + CP combination is now first-party, with IBM's "Confluent Platform for Z and LinuxONE" bundle.
 - **Off-platform elasticity for analytics** — Databricks elastic compute, lakehouse format, MLOps maturity, and access to vendor data make it the right analytical home; pinning it to L1 would waste both the platform's strengths and L1's silicon.

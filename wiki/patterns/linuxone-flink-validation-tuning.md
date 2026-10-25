@@ -11,10 +11,11 @@ sources:
   - https://ibm.github.io/ai-on-z-101/onnxdlc/
 related: [concepts/flink-checkpointing, concepts/exactly-once-semantics, concepts/linuxone-kafka-integration, concepts/linuxone-platform-foundations, patterns/linuxone-validation-suite, patterns/linuxone-kafka-tuning, patterns/fsi-exactly-once]
 confidence: medium
-last_updated: 2026-05-07
+last_updated: 2026-10-25
 last_validated: 2026-05-07
 validated_via: [confluent-docs (versions-interoperability.html), context7 (/websites/nightlies_apache_flink_flink-docs-release-2_2)]
 changelog:
+  - 2026-10-25 (rev 3) — Corrected FIPS: CP FIPS mode is not yet supported on s390x (versions-interoperability, 8.3 docs); the RHEL-FIPS/BCFIPS install step is withdrawn.
   - 2026-05-07 (rev 2) — Peer-review pass. Replaced `TwoPhaseCommitSinkFunction` reference (deprecated in Flink 2.x) with SinkV2 / `SupportsCommitter` framing per FLIP-372/FLIP-453. Replaced fabricated zDLC compile flags with citation to IBM AI Toolkit docs. Added checkpoint write-amplification note and RocksDB localdir guidance. Softened CV-models statement (small CV inference can land on Spyre). L4 cache wording corrected to virtual cluster cache.
 ---
 
@@ -44,7 +45,7 @@ Aggressive validation, tuning, and AI-inference integration plan for **Confluent
 
 #### 2.1 Install
 - **CMF 2.3.x on CP 8.2.x** (Apache Flink 1.18.x – 2.1.x range; pin to 2.1.x for new builds).
-- Run on RHEL 9 in FIPS mode; verify `systemd-cryptenroll` and that the JVM uses BCFIPS (preferred for Confluent-supported JDKs) or IBMJCE (only with IBM Semeru, which is not on Confluent's supported JDK list — see [LinuxONE Kafka Tuning § JDK posture](linuxone-kafka-tuning.md)).
+- Run on RHEL 9. CP FIPS mode is not yet supported on s390x (CP versions-interoperability, re-checked 2026-10-25), so do not plan a FIPS-mode CMF/Flink deployment on L1; RHEL `fips=1` is outside Confluent's s390x support statement. IBMJCE is available only with IBM Semeru, which is not on Confluent's supported JDK list — see [LinuxONE Kafka Tuning § JDK posture](linuxone-kafka-tuning.md).
 - Sanity job: `Datagen → SQL filter → Print` running in a session cluster; should be visible in CMF UI within 60 s.
 - KRaft Kafka catalog registered in CMF; Schema Registry catalog reachable; both round-trip a CREATE TABLE within 5 s.
 

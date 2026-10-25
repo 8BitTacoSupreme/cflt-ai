@@ -22,7 +22,7 @@
     - nnpa-inference-pinning
     - nnpa-fallback-detection
     - cfk-cmf-flink-s390x
-    - fips-mode-s390x
+    - fips-pipeline-staged-s390x
     - sbom-model-attestation
   constraints:
     min_cp_version: "8.2.0"          # s390x floor; pin no lower
@@ -33,15 +33,19 @@
     # supported on s390x". They are CP-LAYER statements, not platform statements —
     # s390x/RHEL/OCP support all of them. The public matrix lags actual state; this
     # POC runs with the IBM/Confluent partner team, who are authoritative. Treat each
-    # as a recorded posture item confirmed at kickoff, NOT a design-time blocker.
+    # as a recorded posture item confirmed at kickoff, NOT a design-time blocker --
+    # except FIPS mode, which stays off until the published matrix lists it (2026-10-25).
     posture_items_confirm_with_partner_team:
       fips_mode:
-        status: "enabled"
+        status: "off -- not yet supported on s390x"
         basis: >-
-          OS FIPS is validated ON z16 (RHEL 9 FIPS 140-3 modules tested on z16 as a certified
-          operational environment). CP FIPS mode is BC-FIPS — pure Java, so enabling it on Z is
-          configuration + certification sequencing, not architecture.
-        implemented_by: ["ansible/02-fips-mode.yml", "helm/cfk-operator-values.yaml"]
+          CP versions-interoperability (re-checked 2026-10-25, 8.3 docs) lists FIPS mode as not
+          yet supported on s390x. OS FIPS is validated ON z16 (RHEL 9 FIPS 140-3 modules), but that
+          is not CP FIPS mode and is outside Confluent's s390x support statement. FIPS-mandated
+          broker tiers run on x86/ARM; the BCFKS keystore pipeline stays staged so turning CP FIPS
+          mode on later is a values change. A contrary vendor statement must be in writing and in
+          the BOM.
+        implemented_by: ["helm/cfk-operator-values.yaml (fipsmode: false)", "manifests/00-platform-crs.yaml (no FIPS settings)", "ansible/02-fips-mode.yml (OS verification + staged BCFKS)"]
       ipv6:
         status: "recorded, not gated"
         note: "Confirm CP-on-Z IPv6 listener support at kickoff; absence surfaces as broker bind failures, not a clean error."
