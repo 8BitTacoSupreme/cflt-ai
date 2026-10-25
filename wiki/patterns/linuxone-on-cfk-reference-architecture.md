@@ -3,7 +3,8 @@ title: LinuxONE-on-CFK Reference Architecture
 tags: [linuxone, ibm, s390x, cfk, ocp, fsi, accelerator, kustomize, kafka, flink]
 sources:
   - fsi-dsp://accelerator/confluent-on-linuxone
-  - fsi-dsp://adr/009
+  - fsi-dsp://adr/013
+  - https://docs.confluent.io/platform/current/installation/versions-interoperability.html
 related:
   - concepts/fsi-data-streaming-platform
   - concepts/linuxone-kafka-integration
@@ -13,8 +14,8 @@ related:
   - concepts/fips-at-install-ocp-requirement
   - concepts/s390x-custom-image-build-pipeline
 confidence: high
-last_updated: 2026-05-23
-last_validated: 2026-05-23
+last_updated: 2026-10-25
+last_validated: 2026-10-25
 ---
 
 # LinuxONE-on-CFK Reference Architecture
@@ -31,10 +32,10 @@ production-grade hardened CP on LinuxONE with each control independently validat
 
 ```mermaid
 flowchart TD
-  subgraph Platform["OCP on IBM LinuxONE (s390x, FIPS)"]
+  subgraph Platform["OCP on IBM LinuxONE (s390x)"]
     Base[("IBM Mondics base: CP 8.2.0, CFK 3.2.x, KRaft, Cluster Linking")]
     L1["01-rbac: MDS + LDAP, 6 FSI roles, ConfluentServerAuthorizer"]
-    L2["02-tls: mTLS internal listeners, FIPS, cert-manager"]
+    L2["02-tls: mTLS internal listeners, TLS 1.2/1.3, cert-manager (no CP FIPS mode)"]
     L3["03-schema-governance: FULL_TRANSITIVE, SR bootstrap Job"]
     L4["04-audit: event router, 7y audit topic, Splunk + Dynatrace sinks"]
     L5["05-flink: FlinkEnvironment, CMFRestClass, example jobs"]
@@ -50,8 +51,9 @@ flowchart TD
 ```
 
 Source of truth: `fsi-dsp://accelerator/confluent-on-linuxone` (DESIGN.md, README.md,
-RUNBOOK.md, KNOWN-GAPS.md, MIGRATION.md). Decision-level rationale: `fsi-dsp://adr/009`
-(LinuxONE deployment guidance — IBM Semeru, PKCS12, CPACF).
+RUNBOOK.md, KNOWN-GAPS.md, MIGRATION.md). Decision-level rationale: `fsi-dsp://adr/013`
+(LinuxONE / s390x deployment guidance — PKCS12, CPACF; Amendment 2026-10-24: no CP FIPS
+mode on s390x).
 
 ## Provenance
 
@@ -59,7 +61,7 @@ RUNBOOK.md, KNOWN-GAPS.md, MIGRATION.md). Decision-level rationale: `fsi-dsp://a
 |-----------|--------|------------------|
 | Base CP manifests | IBM / Matt Mondics (`mmondics/Confluent-LinuxONE-Mirror`, 2026-05-20) | CP 8.2.0 CFK CRs, KRaft mode, Cluster Linking, KafkaRestClass, producer-app sample |
 | `layers/01-rbac/` | GoodLabs | MDS RBAC with LDAP, 6 FSI role bindings, ConfluentServerAuthorizer |
-| `layers/02-tls/` | GoodLabs | mTLS on all internal listeners, FIPS mode, cert-manager integration |
+| `layers/02-tls/` | GoodLabs | mTLS on all internal listeners, TLS 1.2/1.3, cert-manager integration |
 | `layers/03-schema-governance/` | GoodLabs | FULL_TRANSITIVE compatibility, SR bootstrap Job, hard-delete RBAC enforcement |
 | `layers/04-audit/` | GoodLabs | Audit event routing, 7y-retention audit topic, Splunk + Dynatrace sinks |
 | `layers/05-flink/` | GoodLabs | Flink stream processing: FlinkEnvironment, CMFRestClass, mTLS, RBAC, FSI example jobs |
@@ -126,11 +128,11 @@ rather than duplicating them:
 | Accelerator concern | Reused existing asset |
 |---------------------|-----------------------|
 | CFK operator install | `ansible/roles/cfk_operator` (readiness-gated) — RUNBOOK calls it instead of raw `helm install` |
-| s390x base CR conventions | `scenarios/cfk-openshift-linuxone/values/kafka.yaml` (node affinity, FIPS) |
+| s390x base CR conventions | `scenarios/cfk-openshift-linuxone/values/kafka.yaml` (node affinity) |
 | CA + cert PEMs for `spec.tls.secretRef` | `LinuxOne/ansible-mtls/` + `ansible/roles/cp_mtls` mint CA/leaf PEMs → K8s cert secrets; cert-manager is the in-cluster rotation alternative |
 | RBAC drift reconciliation | `ansible/roles/cp_rbac` LIST/DIFF/ADD/REMOVE pass over `ConfluentRolebinding` CRs (ops + CI) |
 | SIEM dashboards/alerts | `observability/splunk/` + `observability/dynatrace/` — `layers/04-audit/siem/` references, no duplication |
-| s390x decision rationale | `docs/adr/009-linuxone-deployment-guidance.md` — cross-linked from layer READMEs |
+| s390x decision rationale | `docs/adr/013-linuxone-deployment-guidance.md` — cross-linked from layer READMEs |
 
 CFK manages all Confluent components; the Ansible roles act on the CFK-managed
 cluster via MDS/Helm REST — no parallel broker management path.
@@ -141,8 +143,8 @@ cluster via MDS/Helm REST — no parallel broker management path.
   `topic-admin`, `producer-only`, `consumer-only`, `schema-admin`,
   `auditor-readonly`); `ConfluentServerAuthorizer` fires on every authz decision.
 - **02-tls:** Per-component `spec.tls.secretRef` PEM secrets; mTLS on internal
-  listeners; `spec.tls.fips.enabled: true` (no-op without OCP FIPS-at-install,
-  see `concepts/fips-at-install-ocp-requirement`); cert-manager `ClusterIssuer` /
+  listeners; no `spec.tls.fips` — CP FIPS mode is not yet supported on s390x (KNOWN-GAPS
+  G-02; see `concepts/fips-at-install-ocp-requirement`); cert-manager `ClusterIssuer` /
   `Certificate` for declarative rotation.
 - **03-schema-governance:** `schema.compatibility.level=full_transitive` (prod);
   idempotent `restartPolicy: Never` bootstrap Job PUTs FULL_TRANSITIVE via REST.
@@ -185,7 +187,7 @@ state). Cluster-dependent — not run in CI.
 - `concepts/linuxone-platform-foundations` — s390x platform-level rationale (Telum II, CPACF, SMC-R)
 - `patterns/auditor-readonly-rbac-payload-isolation` — layer 01 canonical RBAC pattern
 - `patterns/flink-on-cfk-fsi-example-jobs` — layer 05 canonical Flink pattern
-- `concepts/fips-at-install-ocp-requirement` — layer 02 OCP install dependency
+- `concepts/fips-at-install-ocp-requirement` — why layer 02 does not set CP FIPS mode on s390x
 - `concepts/s390x-custom-image-build-pipeline` — layer 04 / layer 05 image build pipeline
 
 ## Provenance

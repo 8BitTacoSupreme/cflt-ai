@@ -1,6 +1,6 @@
 ---
 title: Concept Graph / Backlink Registry
-last_updated: 2026-05-18
+last_updated: 2026-10-25
 ---
 
 # Backlink Registry
@@ -138,7 +138,7 @@ patterns/fsi-exactly-once → patterns/dr-cluster-linking : DR with EOS implicat
 
 concepts/linuxone-kafka-integration → concepts/fsi-data-streaming-platform : platform overview including LinuxONE context
 concepts/linuxone-kafka-integration → concepts/sla-tiers : latency tiers (market_data, risk) drive LinuxONE adoption
-concepts/linuxone-kafka-integration → concepts/fsi-compliance : FIPS 140-2 and audit trail requirements
+concepts/linuxone-kafka-integration → concepts/fsi-compliance : audit trail requirements; FIPS 140 not met by CP on s390x brokers
 concepts/linuxone-kafka-integration → patterns/dr-cluster-linking : DR pattern for LinuxONE-produced topics
 
 patterns/audit-log-siem-integration → concepts/fsi-data-streaming-platform : observability templates cover operational metrics; audit log is the security complement
@@ -613,9 +613,9 @@ patterns/linuxone-on-cfk-reference-architecture → concepts/linuxone-kafka-inte
 patterns/linuxone-on-cfk-reference-architecture → concepts/linuxone-platform-foundations : s390x platform foundations
 patterns/linuxone-on-cfk-reference-architecture → patterns/auditor-readonly-rbac-payload-isolation : layer 01 canonical RBAC pattern
 patterns/linuxone-on-cfk-reference-architecture → patterns/flink-on-cfk-fsi-example-jobs : layer 05 canonical Flink pattern
-patterns/linuxone-on-cfk-reference-architecture → concepts/fips-at-install-ocp-requirement : layer 02 OCP install dependency
+patterns/linuxone-on-cfk-reference-architecture → concepts/fips-at-install-ocp-requirement : layer 02: no CP FIPS mode on s390x
 patterns/linuxone-on-cfk-reference-architecture → concepts/s390x-custom-image-build-pipeline : layer 04 / layer 05 image build pipeline
-patterns/linuxone-on-cfk-reference-architecture → synthesis/adr-index : ADR-009 LinuxONE deployment guidance
+patterns/linuxone-on-cfk-reference-architecture → synthesis/adr-index : ADR-013 LinuxONE deployment guidance
 
 # Outbound — patterns/x86-to-linuxone-cluster-linking-migration
 patterns/x86-to-linuxone-cluster-linking-migration → concepts/cluster-linking-topology : CL mechanism underlying the migration
@@ -625,7 +625,7 @@ patterns/x86-to-linuxone-cluster-linking-migration → patterns/linuxone-on-cfk-
 patterns/x86-to-linuxone-cluster-linking-migration → synthesis/adr-index : ADR-005 CL-over-MRC decision
 
 # Outbound — concepts/fips-at-install-ocp-requirement
-concepts/fips-at-install-ocp-requirement → patterns/linuxone-on-cfk-reference-architecture : layer 02 TLS+FIPS context
+concepts/fips-at-install-ocp-requirement → patterns/linuxone-on-cfk-reference-architecture : layer 02 TLS context
 concepts/fips-at-install-ocp-requirement → concepts/fsi-compliance : PCI-DSS / FFIEC encryption-in-transit context
 concepts/fips-at-install-ocp-requirement → patterns/auditor-readonly-rbac-payload-isolation : layer 01 RBAC pattern that mTLS principals into
 
@@ -663,7 +663,7 @@ concepts/fsi-compliance → patterns/auditor-readonly-rbac-payload-isolation : c
 # Outbound — patterns/cp-mtls-self-signed-setup
 patterns/cp-mtls-self-signed-setup → concepts/linuxone-jdk-tls-gotchas : IBM Semeru / FIPS / PKCS12 footguns
 patterns/cp-mtls-self-signed-setup → patterns/cp-tls-debugging-by-component : per-component handshake debug recipes
-patterns/cp-mtls-self-signed-setup → concepts/fips-at-install-ocp-requirement : CFK fips.enabled is no-op on non-FIPS OCP
+patterns/cp-mtls-self-signed-setup → concepts/fips-at-install-ocp-requirement : CP FIPS mode not supported on s390x; OCP FIPS-at-install for x86/ARM
 patterns/cp-mtls-self-signed-setup → concepts/linuxone-kafka-integration : LinuxONE Kafka context
 patterns/cp-mtls-self-signed-setup → patterns/auditor-readonly-rbac-payload-isolation : ACL design once mTLS is up
 
@@ -676,14 +676,14 @@ patterns/cp-tls-debugging-by-component → patterns/connect-deployment-models : 
 # Outbound — concepts/linuxone-jdk-tls-gotchas
 concepts/linuxone-jdk-tls-gotchas → patterns/cp-mtls-self-signed-setup : the canonical mTLS procedure this article supports
 concepts/linuxone-jdk-tls-gotchas → patterns/cp-tls-debugging-by-component : handshake debug recipes per component
-concepts/linuxone-jdk-tls-gotchas → concepts/fips-at-install-ocp-requirement : silent-failure trip-wire on non-FIPS OCP
+concepts/linuxone-jdk-tls-gotchas → concepts/fips-at-install-ocp-requirement : CP FIPS mode not supported on s390x; OCP FIPS-at-install for x86/ARM
 concepts/linuxone-jdk-tls-gotchas → concepts/linuxone-platform-foundations : STP / UKO / CBU foundations
 concepts/linuxone-jdk-tls-gotchas → concepts/linuxone-kafka-integration : z/OS bridge and platform positioning
 concepts/linuxone-jdk-tls-gotchas → concepts/s390x-custom-image-build-pipeline : closing image gaps via docker buildx
 concepts/linuxone-jdk-tls-gotchas → patterns/linuxone-kafka-tuning : Kafka 4.2 / CP 8.2 tuning with FSI tier overlay
 
 # Inbound (existing wiki → new mTLS articles) — ≥1 inbound per article
-concepts/fips-at-install-ocp-requirement → patterns/cp-mtls-self-signed-setup : mTLS procedure depends on FIPS-at-install for OCP-hosted CFK
+concepts/fips-at-install-ocp-requirement → patterns/cp-mtls-self-signed-setup : x86/ARM OCP-hosted CFK FIPS depends on FIPS-at-install
 concepts/linuxone-platform-foundations → concepts/linuxone-jdk-tls-gotchas : foundations referenced by the L1 gotcha catalog
 patterns/auditor-readonly-rbac-payload-isolation → patterns/cp-mtls-self-signed-setup : mTLS is the auth substrate for the ACL pattern
 patterns/connect-deployment-models → patterns/cp-tls-debugging-by-component : Connect deployment surfaces the SSL config landscape

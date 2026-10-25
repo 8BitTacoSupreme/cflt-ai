@@ -19,7 +19,7 @@ forbidden_claims:
 
 **What the answer MUST contain:**
 - RBAC (layer 01) — auditor-readonly payload isolation, 6 FSI roles, LDAP-group identity boundary
-- mTLS (layer 02) — confluent-ca-issuer, FIPS-at-install OCP requirement
+- mTLS (layer 02) — confluent-ca-issuer, TLS 1.2/1.3; no CP FIPS mode (not yet supported on s390x, G-02)
 - Schema Registry governance (layer 03) — FULL_TRANSITIVE compatibility
 - Audit logging (layer 04) — Connect-based SIEM shipping (Splunk Sink / HTTP Sink → Dynatrace)
 - Flink (layer 05) — mTLS to brokers, encrypted checkpoint storage

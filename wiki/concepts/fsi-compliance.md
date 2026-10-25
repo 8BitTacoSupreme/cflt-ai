@@ -5,7 +5,7 @@ sources: [fsi-dsp://script/validate-fips, fsi-dsp://adr/006]
 related: [concepts/fsi-data-streaming-platform, concepts/sla-tiers, patterns/fsi-governance-automation, concepts/schema-evolution-strategies]
 confidence: high
 last_updated: 2026-04-11
-last_validated: 2026-04-28
+last_validated: 2026-10-25
 ---
 
 # FSI Compliance

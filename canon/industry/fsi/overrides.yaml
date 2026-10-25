@@ -40,9 +40,11 @@ mainframe_integration:
 fsi.security.mds-rbac:
   _source: "fsi-dsp://accelerator/confluent-on-linuxone/01-rbac"
   description: "MDS RBAC role bindings for Confluent Platform on LinuxONE"
+# Key name kept for ID stability (MANIFEST canon_key, parity map, tests). Layer 02
+# does not set CP FIPS mode: it is not yet supported on s390x (fsi-dsp KNOWN-GAPS G-02).
 fsi.security.tls-fips:
   _source: "fsi-dsp://accelerator/confluent-on-linuxone/02-tls"
-  description: "FIPS 140-2 mTLS configuration baseline for LinuxONE deployments"
+  description: "mTLS + TLS 1.2/1.3 baseline for Confluent Platform on LinuxONE. CP FIPS mode is not yet supported on s390x; FIPS-mandated broker tiers run on x86/ARM."
 fsi.schema.compatibility-full-transitive:
   _source: "fsi-dsp://accelerator/confluent-on-linuxone/03-schema-governance"
   description: "FULL_TRANSITIVE compatibility mode for FSI critical-tier subjects"

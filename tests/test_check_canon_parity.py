@@ -10,7 +10,7 @@ import yaml
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from tools.check_canon_parity import check_parity, MODULE_TO_CANON_KEY
+from tools.check_canon_parity import ALLOWED_STRAY, MODULE_TO_CANON_KEY, check_parity, check_strays
 
 
 # ---------------------------------------------------------------------------
@@ -89,6 +89,18 @@ class TestCheckParity:
             f"Expected no drift on current state, but got:\n" +
             "\n".join(drift)
         )
+
+    def test_no_strays_on_current_state(self):
+        """Every governed asset on disk is registered in MANIFEST or allowlisted."""
+        fsi_dsp_root = PROJECT_ROOT / "raw" / "repos" / "fsi-dsp"
+        strays = check_strays(fsi_dsp_root / "MANIFEST.yaml", fsi_dsp_root)
+        assert strays == [], "\n".join(strays)
+
+    def test_allowed_stray_entries_exist_on_disk(self):
+        """An allowlist entry for a path that no longer exists is dead debt: remove it."""
+        fsi_dsp_root = PROJECT_ROOT / "raw" / "repos" / "fsi-dsp"
+        gone = sorted(p for p in ALLOWED_STRAY if not (fsi_dsp_root / p).exists())
+        assert gone == [], f"ALLOWED_STRAY entries with no file on disk: {gone}"
 
     def test_detects_missing_canon_key(self):
         """Drift detected when defaults.yaml is missing a key required by a terraform-module."""

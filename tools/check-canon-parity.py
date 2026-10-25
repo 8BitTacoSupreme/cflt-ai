@@ -96,11 +96,6 @@ ALLOWED_STRAY: set[str] = {
     # ADR template (not a real ADR). Upstream may rename to docs/adr/_template.md
     # eventually; until then, leave registered as a stray exemption.
     "docs/adr/000-template.md",
-    # Duplicate ADR-009 number — upstream has both 009-linuxone-kafka-offload.md
-    # (registered) and 009-linuxone-deployment-guidance.md (this one). Numbering
-    # collision should be resolved by upstream rename or merge; allowlisting here
-    # to unblock the gate while that PR is pending.
-    "docs/adr/009-linuxone-deployment-guidance.md",
     # Empty .terraform residue from v1.0 era PR #2 (module/cc-cluster-basic).
     # The directory contains only `.terraform/` and `.terraform.lock.hcl` — no real
     # module files. Should be cleaned up upstream (added to .gitignore + removed

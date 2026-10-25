@@ -4,15 +4,15 @@ tags: [linuxone ibm mainframe z/os mq kafka-connect fips dr]
 sources: [fsi-dsp://adr/009]
 related: [concepts/fsi-data-streaming-platform, concepts/sla-tiers, concepts/fsi-compliance, patterns/dr-cluster-linking]
 confidence: high
-last_updated: 2026-04-28
-last_validated: 2026-04-28
+last_updated: 2026-10-25
+last_validated: 2026-10-25
 ---
 
 # LinuxONE Kafka Integration for z/OS Offload
 
 ## Summary
 
-IBM LinuxONE (Emperor 4 or Rockhopper III+) is the preferred compute platform for bridging z/OS workloads into Apache Kafka via the IBM MQ Source Connector. Running a native Linux environment on the same physical frame as z/OS, LinuxONE provides sub-millisecond latency via HiperSockets while avoiding mainframe software license overhead, delivering 99.999% availability with FIPS 140-2 native crypto and full standard Linux tooling compatibility. The canonical integration pattern is: z/OS Application → IBM MQ Queue → MQ Source Connector (on LinuxONE) → Kafka Topic.
+IBM LinuxONE (Emperor 4 or Rockhopper III+) is the preferred compute platform for bridging z/OS workloads into Apache Kafka via the IBM MQ Source Connector. Running a native Linux environment on the same physical frame as z/OS, LinuxONE provides sub-millisecond latency via HiperSockets while avoiding mainframe software license overhead, delivering 99.999% availability with CPACF hardware crypto acceleration (CP FIPS mode is not yet supported on s390x) and full standard Linux tooling compatibility. The canonical integration pattern is: z/OS Application → IBM MQ Queue → MQ Source Connector (on LinuxONE) → Kafka Topic.
 
 ## Detail
 
@@ -33,9 +33,9 @@ This pattern preserves existing z/OS application interfaces while enabling downs
 | Latency to z/OS | Sub-millisecond via HiperSockets (no external network hop) |
 | License overhead | None — Linux workloads carry no mainframe software license cost |
 | Availability | 99.999% — inherits z/OS frame reliability |
-| FIPS compliance | FIPS 140-2 validated crypto modules natively; no additional certification work |
+| FIPS | CP FIPS mode not yet supported on s390x; FIPS-mandated broker tiers run on x86/ARM (ADR-009 Amendment 2026-10-24) |
 | Tooling | Standard Linux tooling (Ansible, Terraform, Docker) works on LinuxONE |
-| Architecture | s390x — most Confluent components certified; verify connector/client versions before deploy |
+| Architecture | s390x supported from CP 8.2.0 (IBM Z entitlement required); verify connector/client versions before deploy |
 
 HiperSockets provides an in-memory channel between z/OS LPARs and LinuxONE — there is no external network adapter involved, which eliminates the 5-20ms round-trip latency of a PrivateLink or physical NIC path. This makes LinuxONE the only viable platform for `market_data` (sub-millisecond) and `risk` (<10ms) SLA tiers where the data source is z/OS.
 
@@ -49,7 +49,7 @@ HiperSockets provides an in-memory channel between z/OS LPARs and LinuxONE — t
 
 **Serialization:** Avro with Schema Registry per [ADR-001](synthesis/adr-index.md). Schemas registered at the connector level; all governed topic defaults apply (compatibility mode derived from SLA tier).
 
-**Security:** FIPS 140-2 validated cryptographic modules on LinuxONE. mTLS between Kafka clients and brokers per [ADR-006](synthesis/adr-index.md). Service accounts provisioned per application, not per team (per FSI security defaults).
+**Security:** CP FIPS mode is not yet supported on s390x, so a tier whose policy requires FIPS 140 validated broker crypto runs its brokers on x86/ARM (ADR-009 Amendment 2026-10-24). mTLS between Kafka clients and brokers per [ADR-006](synthesis/adr-index.md). Service accounts provisioned per application, not per team (per FSI security defaults).
 
 **DR:** LinuxONE instances deployed in both primary and DR regions. Cluster Linking replicates topics cross-region per [ADR-005](synthesis/adr-index.md). Failover orchestration follows the Cluster Linking DR pattern.
 
@@ -84,6 +84,6 @@ For compliance-tier topics requiring RPO=0, deploy MRC on Confluent Platform alo
 
 - [FSI Data Streaming Platform](concepts/fsi-data-streaming-platform.md) — platform overview including LinuxONE integration context
 - [SLA Tiers](concepts/sla-tiers.md) — latency tiers that drive LinuxONE adoption for market_data and risk workloads
-- [FSI Compliance](concepts/fsi-compliance.md) — FIPS 140-2 and audit trail requirements met by LinuxONE
+- [FSI Compliance](concepts/fsi-compliance.md) — audit trail requirements; FIPS 140 is not met by CP on s390x brokers today
 - [DR — Cluster Linking](patterns/dr-cluster-linking.md) — DR pattern for topics produced by LinuxONE MQ Source Connector
 - [ADR Index](synthesis/adr-index.md) — ADR-009 (LinuxONE decision), ADR-001, ADR-005, ADR-006

@@ -23,12 +23,13 @@ def manifest_ids(manifest):
 class TestManifestStructure:
     """CNTR-01: MANIFEST.yaml has correct schema."""
 
-    def test_version_is_1_3_0(self, manifest):
+    def test_version_is_1_4_0(self, manifest):
         # Bumped to 1.1.0 in Phase 9 — upstream fsi-dsp main introduced
         # the confluent-on-linuxone accelerator + reference/*-low-latency-azure
         # additions; MANIFEST is a non-breaking 1.0.0 -> 1.1.0 minor bump.
-        # 1.2.0: fsi-dsp module/cc-cluster-basic; 1.3.0: scenario/mq-quickstart.
-        assert manifest["version"] == "1.3.0"
+        # 1.2.0: fsi-dsp module/cc-cluster-basic; 1.3.0: scenario/mq-quickstart;
+        # 1.4.0: adr/013 (the duplicate ADR-009 renumbered).
+        assert manifest["version"] == "1.4.0"
 
     def test_schema_is_v1(self, manifest):
         assert manifest["schema"] == "fsi-dsp/manifest/v1"
@@ -61,7 +62,7 @@ class TestManifestCompleteness:
         "scenario/cfk-openshift", "scenario/cp-rhel", "scenario/private-cloud",
     ]
 
-    EXPECTED_ADRS = [f"adr/{str(i).zfill(3)}" for i in range(1, 10)]
+    EXPECTED_ADRS = [f"adr/{str(i).zfill(3)}" for i in range(1, 11)] + ["adr/013"]
 
     EXPECTED_REFERENCES = [
         "reference/java-producer", "reference/java-consumer",
@@ -133,11 +134,41 @@ class TestManifestPathsExist:
         for cap in manifest["capabilities"]:
             path = fsi_dsp_root / cap["path"]
             if not path.exists():
-                # ADR-009 might not exist yet if Plan 04 hasn't run
-                if cap["id"] == "adr/009":
-                    continue
                 missing.append(f"{cap['id']}: {cap['path']}")
         assert missing == [], f"Missing paths:\n" + "\n".join(missing)
+
+
+class TestAdrNumbering:
+    """fsi-dsp ADR numbers are unique, registered, and match their IDs and headings
+    (two different ADR-009 files existed until fsi-dsp renumbered one to 013)."""
+
+    @pytest.fixture
+    def adr_files(self, fsi_dsp_root):
+        files = sorted(p for p in (fsi_dsp_root / "docs" / "adr").glob("[0-9][0-9][0-9]-*.md")
+                       if p.name != "000-template.md")
+        assert len(files) >= 13, files
+        return files
+
+    def test_adr_file_numbers_unique(self, adr_files):
+        numbers = [p.name[:3] for p in adr_files]
+        duplicates = sorted({n for n in numbers if numbers.count(n) > 1})
+        assert duplicates == [], f"ADR numbers used more than once: {duplicates}"
+
+    def test_every_adr_file_registered(self, manifest, adr_files):
+        registered = {cap["path"] for cap in manifest["capabilities"] if cap["type"] == "adr"}
+        unregistered = [f"docs/adr/{p.name}" for p in adr_files if f"docs/adr/{p.name}" not in registered]
+        assert unregistered == [], f"ADR files missing from MANIFEST: {unregistered}"
+
+    def test_adr_ids_match_file_numbers(self, manifest):
+        for cap in manifest["capabilities"]:
+            if cap["type"] == "adr":
+                number = cap["id"].split("/", 1)[1][:3]
+                assert cap["path"].startswith(f"docs/adr/{number}-"), f"{cap['id']} -> {cap['path']}"
+
+    def test_adr_heading_matches_file_number(self, adr_files):
+        for p in adr_files:
+            heading = p.read_text().splitlines()[0]
+            assert heading.startswith(f"# ADR-{p.name[:3]}:"), f"{p.name}: {heading}"
 
 
 class TestCIWorkflowsExist:

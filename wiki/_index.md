@@ -1,6 +1,6 @@
 ---
 title: Wiki Index
-last_updated: 2026-05-18
+last_updated: 2026-10-25
 ---
 
 # cflt-ai Wiki Index
@@ -60,9 +60,9 @@ The LLM maintains this file. Do not edit manually.
 [Confluent Platform Broker JMX — Canonical MBean Reference](concepts/confluent-platform-broker-jmx.md) — Broker MBean tree organized by subsystem (Replication, Network request-stages, Throughput, Controller, FetcherLag, Storage) with per-tier alert thresholds and a Prometheus JMX exporter rule excerpt — #observability #jmx #mbean #broker #confluent-platform #cfk #kafka #monitoring #prometheus #fsi
 [Schema Registry Observability — CC and Self-Managed](concepts/schema-registry-observability.md) — Three self-managed SR JMX MBeans (jetty-metrics, master-slave-role, jersey-metrics with per-endpoint attributes) + CC Metrics API surface (schema_count) + deployment-model coverage gap and client-side wrapper compensation pattern — #observability #schema-registry #jmx #mbean #confluent-cloud #confluent-platform #cfk #metrics-api #fsi
 [ksqlDB Observability — CC and Self-Managed](concepts/ksqldb-observability.md) — CC Metrics API surface (10 metrics: committed_offset_lag, query_restarts, query_saturation, etc.) + self-managed JMX (io.confluent.ksql.metrics: engine/queries/pull/push) + underlying Kafka Streams runtime MBeans + per-tier alert patterns and DLQ routing — #observability #ksqldb #jmx #mbean #confluent-cloud #confluent-platform #cfk #metrics-api #kafka-streams #fsi
-[FIPS-at-install OCP Requirement](concepts/fips-at-install-ocp-requirement.md) — Trip-wire: spec.tls.fips.enabled is no-op on non-FIPS OCP; Red Hat does not support post-install FIPS conversion — #linuxone #ibm #s390x #ocp #fips #fsi #trip-wire
+[FIPS-at-install OCP Requirement](concepts/fips-at-install-ocp-requirement.md) — s390x: CP FIPS mode not yet supported (G-02); x86/ARM OCP: spec.tls.fips.enabled is silently non-compliant without FIPS-at-install; Red Hat does not support post-install FIPS conversion — #linuxone #ibm #s390x #ocp #fips #fsi #trip-wire
 [s390x Custom Image Build Pipeline](concepts/s390x-custom-image-build-pipeline.md) — docker buildx --platform linux/s390x for CFK Connect (G-08) and Flink SQL-runner (G-12); UBI9 base for SR bootstrap; arch-neutral Java JARs — #linuxone #ibm #s390x #docker-buildx #connect #flink #fsi
-[LinuxONE JDK / TLS / s390x Gotchas](concepts/linuxone-jdk-tls-gotchas.md) — IBM Semeru provider order (IBMJCE/IBMJSSE2), FIPS mode, PKCS12 MAC algorithm (HmacPBESHA256), cipher intersection x86↔s390x, TLS 1.3 quirks on older Semeru, PKCS#11/CEX wiring, time skew, hostname/SAN, plus s390x multi-arch/RocksDB/connector JNI/endianness — #linuxone #ibm #s390x #ibm-semeru #openj9 #fips #pkcs12 #pkcs11 #cex #tls #jdk #rocksdb #fsi
+[LinuxONE JDK / TLS / s390x Gotchas](concepts/linuxone-jdk-tls-gotchas.md) — IBM Semeru provider order (IBMJCE/IBMJSSE2), OS/JDK FIPS mode (outside Confluent's s390x support), PKCS12 MAC algorithm (HmacPBESHA256), cipher intersection x86↔s390x, TLS 1.3 quirks on older Semeru, PKCS#11/CEX wiring, time skew, hostname/SAN, plus s390x multi-arch/RocksDB/connector JNI/endianness — #linuxone #ibm #s390x #ibm-semeru #openj9 #fips #pkcs12 #pkcs11 #cex #tls #jdk #rocksdb #fsi
 
 ## Patterns
 

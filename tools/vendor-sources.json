@@ -36,10 +36,10 @@
       },
       {
         "id": "G-02",
-        "title": "FIPS only effective on FIPS-at-install OCP cluster",
+        "title": "CP FIPS mode not yet supported on s390x",
         "status": "Open",
-        "workaround": "OCP must be installed with fips: true in install-config.yaml; post-install FIPS not supported by Red Hat",
-        "fsi_impact": "Silent FSI compliance failure if spec.tls.fips.enabled set on non-FIPS OCP — verify before applying layer 02",
+        "workaround": "FIPS-mandated broker tiers run on x86/ARM until Confluent lists FIPS mode for s390x; layer 02 keeps mTLS + TLS 1.2/1.3 + CPACF and does not set spec.tls.fips.enabled",
+        "fsi_impact": "No CP component on LinuxONE can run CP FIPS mode; a tier whose policy requires FIPS 140 validated broker crypto cannot place brokers on s390x today",
         "source": "accelerators/confluent-on-linuxone/KNOWN-GAPS.md",
         "source_id": "fsi-dsp://accelerator/confluent-on-linuxone"
       },
