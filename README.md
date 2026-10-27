@@ -8,7 +8,7 @@ No custom application code. The "app" is Claude Code itself, configured via comm
 
 ```bash
 # 1. Clone (--recurse-submodules pulls fsi-dsp if you have access)
-git clone --recurse-submodules git@github.com:goodlabs-studio/cflt-ai.git && cd cflt-ai
+git clone --recurse-submodules git@github.com:8BitTacoSupreme/cflt-ai.git && cd cflt-ai
 
 # 2. (Optional) Activate the Flox environment (installs Python, Node.js, etc.)
 flox activate
@@ -29,7 +29,7 @@ That's it. Ask a question, paste a config, or run a skill.
 The Electron app in `app/` is a self-contained front-end over the same skills and is **not** gated on Flox or `bin/setup` — it only needs Node.js ≥ 20 and `pnpm`. To run it in dev:
 
 ```bash
-git clone --recurse-submodules git@github.com:goodlabs-studio/cflt-ai.git
+git clone --recurse-submodules git@github.com:8BitTacoSupreme/cflt-ai.git
 cd cflt-ai/app
 pnpm install
 pnpm dev
@@ -375,7 +375,7 @@ Each layer overrides the layer above. Every override is an ADR in the layer that
 
 ## fsi-dsp Reference Repo (Optional)
 
-The [fsi-dsp](https://github.com/goodlabs-studio/fsi-dsp) repo is linked as a git submodule at `raw/repos/fsi-dsp/`. It contains Terraform modules, Ansible roles, ADRs, and reference implementations. MANIFEST.yaml is the binding contract — cflt-ai cites artifacts by stable ID; CI in both repos enforces ID stability and citation resolution.
+The [fsi-dsp](https://github.com/8BitTacoSupreme/fsi-dsp) repo is linked as a git submodule at `raw/repos/fsi-dsp/`. It contains Terraform modules, Ansible roles, ADRs, and reference implementations. MANIFEST.yaml is the binding contract — cflt-ai cites artifacts by stable ID; CI in both repos enforces ID stability and citation resolution.
 
 `bin/setup` offers to initialize it. You can also do it manually:
 
@@ -383,7 +383,7 @@ The [fsi-dsp](https://github.com/goodlabs-studio/fsi-dsp) repo is linked as a gi
 git submodule update --init raw/repos/fsi-dsp
 ```
 
-Requires SSH access to `goodlabs-studio/fsi-dsp`. Without it, wiki and knowledge skills still work — the act rail (`/dsp:plan`, `/dsp:apply`) requires it.
+Requires SSH access to `8BitTacoSupreme/fsi-dsp`. Without it, wiki and knowledge skills still work — the act rail (`/dsp:plan`, `/dsp:apply`) requires it.
 
 ## Confluent Cloud Integration (Optional)
 

@@ -45,7 +45,7 @@ Every invocation appends an entry to `wiki/activity/YYYY-MM.md` per ACTA-04 sche
 
 ## Step 3: Report results
 
-- On success: print the output directory path; instruct the operator to review `manifest-entry.yaml`, then open a PR against `goodlabs-studio/fsi-dsp` to register the entry.
+- On success: print the output directory path; instruct the operator to review `manifest-entry.yaml`, then open a PR against `8BitTacoSupreme/fsi-dsp` to register the entry.
 - On `blocked-by-profile`: explain which gate fired; suggest the right profile.
 - On `blocked-by-canon-family`: explain the cross-family refusal; suggest omitting `--prod` or switching to an operator profile.
 - On `not-implemented`: note the artifact-type is a H.3c follow-up; suggest the manual upstream-skill invocation.
@@ -64,6 +64,6 @@ Every invocation appends an entry to `wiki/activity/YYYY-MM.md` per ACTA-04 sche
 - NEVER scaffold under `--profile read-only` -- the skill_blocklist + empty allowed_operations defense in depth blocks both gates.
 - NEVER scaffold a prod-canon artifact under a developer-family profile -- cross-family canon refusal.
 - ALWAYS read provenance.json + manifest-entry.yaml before opening the fsi-dsp PR.
-- Output is a PROPOSAL -- the MANIFEST entry must be reviewed and merged via a PR against `goodlabs-studio/fsi-dsp`; cflt-ai does NOT auto-edit the submodule.
+- Output is a PROPOSAL -- the MANIFEST entry must be reviewed and merged via a PR against `8BitTacoSupreme/fsi-dsp`; cflt-ai does NOT auto-edit the submodule.
 - Only `producer` is end-to-end in H.3c; other artifact types stub with `## TODO: H.3c follow-up` markers.
 - Activity log entries follow the `/dsp:apply` ACTA-04 schema; reproducible audit trail for every scaffold invocation (success, blocked, not-implemented).

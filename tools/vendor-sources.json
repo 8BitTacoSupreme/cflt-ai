@@ -20,7 +20,7 @@
     "drift_check": "tools/check_streaming_skills_drift.py"
   },
   "linuxone-accelerator-gaps": {
-    "upstream": "https://github.com/goodlabs-studio/fsi-dsp",
+    "upstream": "https://github.com/8BitTacoSupreme/fsi-dsp",
     "vendored_path": "raw/repos/fsi-dsp/accelerators/confluent-on-linuxone/KNOWN-GAPS.md",
     "ingested_at": "2026-05-23",
     "kind": "gap-register",

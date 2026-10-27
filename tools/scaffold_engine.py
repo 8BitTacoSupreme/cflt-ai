@@ -450,7 +450,7 @@ See `provenance.json` for the full machine-readable record.
 
 ## To register in fsi-dsp
 1. Review `manifest-entry.yaml`.
-2. Open a PR against `goodlabs-studio/fsi-dsp` adding the entry to `MANIFEST.yaml capabilities[]`.
+2. Open a PR against `8BitTacoSupreme/fsi-dsp` adding the entry to `MANIFEST.yaml capabilities[]`.
 3. After merge: bump cflt-ai's `raw/repos/fsi-dsp` submodule pointer.
 4. Then `/dsp:plan` and `/dsp:apply` can reference this artifact by ID.
 

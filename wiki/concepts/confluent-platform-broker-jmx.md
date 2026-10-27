@@ -116,7 +116,7 @@ Aggregated separately:
 
 ### JMX exporter rule excerpt (Prometheus-style)
 
-The minimal set of patterns the [fsi-dsp Grafana stack](https://github.com/goodlabs-studio/fsi-dsp) ships with — covers the 90% of broker health questions for an FSI tier-1 deployment:
+The minimal set of patterns the [fsi-dsp Grafana stack](https://github.com/8BitTacoSupreme/fsi-dsp) ships with — covers the 90% of broker health questions for an FSI tier-1 deployment:
 
 ```yaml
 hostPort: "{{JMX_EXPORTER_HOST}}:9101"

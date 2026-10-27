@@ -119,7 +119,7 @@ if [ -d "$fsi_dsp_path/.git" ] || [ -f "$fsi_dsp_path/.git" ]; then
 else
   echo "   The fsi-dsp repo contains Ansible vars, Terraform configs, ADRs,"
   echo "   and reference implementations used by wiki articles and /wiki:evaluate."
-  echo "   Requires access to github.com/goodlabs-studio/fsi-dsp."
+  echo "   Requires access to github.com/8BitTacoSupreme/fsi-dsp."
   echo ""
   read -rp "   Initialize fsi-dsp submodule? [Y/n]: " fsi_choice
 
@@ -127,7 +127,7 @@ else
     if git submodule update --init raw/repos/fsi-dsp 2>/dev/null; then
       ok "fsi-dsp submodule initialized"
     else
-      warn "Could not clone fsi-dsp. Check your SSH key access to goodlabs-studio."
+      warn "Could not clone fsi-dsp. Check your SSH key access to github.com/8BitTacoSupreme/fsi-dsp."
       echo "   You can retry later: git submodule update --init raw/repos/fsi-dsp"
     fi
   else

@@ -60,6 +60,6 @@ afterSign: build/notarize.cjs
 # Publishing channel for electron-updater (F.3 wires the client side).
 publish:
   provider: github
-  owner: goodlabs-studio
+  owner: 8BitTacoSupreme
   repo: cflt-ai
   releaseType: release
